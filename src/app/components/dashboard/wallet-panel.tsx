@@ -8,7 +8,7 @@ const STORAGE_KEY = "genesis_wallet";
 
 function loadWallet(): { pk: string; addr: string } | null {
   if (typeof window === "undefined") return null;
-  const raw = sessionStorage.getItem(STORAGE_KEY);
+  const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return null;
   try {
     return JSON.parse(raw);
@@ -18,11 +18,11 @@ function loadWallet(): { pk: string; addr: string } | null {
 }
 
 function saveWallet(pk: string, addr: string) {
-  sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ pk, addr }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ pk, addr }));
 }
 
 function clearWallet() {
-  sessionStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(STORAGE_KEY);
 }
 
 export function WalletPanel() {
@@ -144,12 +144,6 @@ export function WalletPanel() {
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Connected badge */}
-          <div className="flex items-center gap-2 text-[#4ade80] font-mono text-[0.5rem] tracking-[0.1em]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#4ade80]" />
-            Connected
-          </div>
-
           {/* Balance */}
           <div className="bg-surface-alt border border-border p-3">
             <div className="font-mono text-[0.45rem] tracking-[0.15em] uppercase text-ink-soft mb-1">

@@ -14,7 +14,7 @@ export default function DashboardLayout({
       <main className="flex-1 ml-[240px]">
         {children}
       </main>
-      <aside className="w-[320px] shrink-0 border-l border-border bg-white hidden xl:block sticky top-0 h-screen overflow-y-auto">
+      <aside className="w-[340px] shrink-0 border-l border-border bg-white sticky top-0 h-screen overflow-y-auto hidden xl:block">
         <div className="p-6 pt-[88px]">
           <WalletPanel />
         </div>

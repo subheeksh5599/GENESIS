@@ -33,10 +33,10 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
     setDeploying(true);
     setError("");
 
-    // Read private key from sessionStorage
+    // Read private key from localStorage
     let privateKey = "";
     if (typeof window !== "undefined") {
-      const raw = sessionStorage.getItem("genesis_wallet");
+      const raw = localStorage.getItem("genesis_wallet");
       if (raw) {
         try {
           const w = JSON.parse(raw);
