@@ -7,37 +7,32 @@ const publicClient = createPublicClient({
   transport: http(MANTLE_RPC),
 });
 
-function getWalletClient() {
-  const pk = process.env.DEPLOYER_PRIVATE_KEY;
-  if (!pk) throw new Error("DEPLOYER_PRIVATE_KEY not set in .env.local");
-  const account = privateKeyToAccount(pk as Hex);
-  return {
-    client: createWalletClient({ chain: mantleTestnet, transport: http(MANTLE_RPC), account }),
-    account,
-  };
+function getAccount(privateKey: string) {
+  return privateKeyToAccount(privateKey as Hex);
 }
 
-export async function getBalance(): Promise<{ balance: string; address: string }> {
-  const pk = process.env.DEPLOYER_PRIVATE_KEY;
-  if (!pk) return { balance: "0", address: "0x0000000000000000000000000000000000000000" };
-  const account = privateKeyToAccount(pk as Hex);
-  const balance = await publicClient.getBalance({ address: account.address });
-  return {
-    balance: (Number(balance) / 1e18).toFixed(6),
-    address: account.address,
-  };
+export async function getBalance(address: string): Promise<string> {
+  if (!address) return "0";
+  const balance = await publicClient.getBalance({ address: address as Hex });
+  return (Number(balance) / 1e18).toFixed(6);
 }
 
 export async function deployContract(
   bytecode: Hex,
-  args: readonly unknown[] = [],
+  privateKey: string,
 ): Promise<{ address: string; txHash: string }> {
-  const { client, account } = getWalletClient();
+  const account = getAccount(privateKey);
 
-  const hash = await client.deployContract({
+  const walletClient = createWalletClient({
+    chain: mantleTestnet,
+    transport: http(MANTLE_RPC),
+    account,
+  });
+
+  const hash = await walletClient.deployContract({
     abi: [],
     bytecode,
-    args,
+    args: [],
   });
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
@@ -48,27 +43,4 @@ export async function deployContract(
     address: receipt.contractAddress,
     txHash: hash,
   };
-}
-
-export async function getDeployedAgents(agentAddresses: string[]): Promise<AgentInfo[]> {
-  if (agentAddresses.length === 0) return [];
-
-  const results = await Promise.allSettled(
-    agentAddresses.map(async (addr) => {
-      const balance = await publicClient.getBalance({ address: addr as Hex });
-      return {
-        address: addr,
-        balance: (Number(balance) / 1e18).toFixed(4),
-      };
-    })
-  );
-
-  return results
-    .filter((r): r is PromiseFulfilledResult<{ address: string; balance: string }> => r.status === "fulfilled")
-    .map((r) => r.value);
-}
-
-export interface AgentInfo {
-  address: string;
-  balance: string;
 }

@@ -33,6 +33,24 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
     setDeploying(true);
     setError("");
 
+    // Read private key from sessionStorage
+    let privateKey = "";
+    if (typeof window !== "undefined") {
+      const raw = sessionStorage.getItem("genesis_wallet");
+      if (raw) {
+        try {
+          const w = JSON.parse(raw);
+          privateKey = w.pk;
+        } catch { /* ignore */ }
+      }
+    }
+
+    if (!privateKey) {
+      setError("No wallet connected. Go to the Wallet panel and generate or paste a private key first.");
+      setDeploying(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/deploy", {
         method: "POST",
@@ -40,6 +58,7 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
         body: JSON.stringify({
           intent: intent || `Allocate ${alloc}% to ${selectedProtocols.join(" + ")}, compound rewards, rebalance weekly`,
           protocols: selectedProtocols,
+          privateKey,
         }),
       });
 

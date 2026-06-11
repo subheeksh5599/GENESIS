@@ -9,21 +9,35 @@ const FAUCET_URL = "https://faucet.testnet.mantle.xyz";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { intent, protocols } = body as { intent: string; protocols?: string[] };
+    const { intent, protocols, privateKey } = body as {
+      intent: string;
+      protocols?: string[];
+      privateKey?: string;
+    };
 
     if (!intent) {
       return NextResponse.json({ error: "Strategy description required" }, { status: 400 });
     }
 
-    // Check deployer balance
-    const { balance, address } = await getBalance();
-    if (parseFloat(balance) < 0.001) {
+    if (!privateKey) {
       return NextResponse.json({
-        error: "Insufficient MNT balance for gas",
+        error: "No wallet connected. Generate or paste a private key in the Wallet panel first.",
+      }, { status: 400 });
+    }
+
+    // Check balance
+    let balance = "0";
+    try {
+      balance = await getBalance(privateKey);
+    } catch {
+      // will fail below
+    }
+
+    if (parseFloat(balance) < 0.0001) {
+      return NextResponse.json({
+        error: `Insufficient MNT balance (${balance} MNT). Get testnet tokens from the faucet.`,
         balance,
-        walletAddress: address,
         faucetUrl: FAUCET_URL,
-        hint: `Please send testnet MNT to ${address} or visit the faucet`,
       }, { status: 402 });
     }
 
@@ -57,10 +71,10 @@ export async function POST(request: Request) {
     const bytecode = ("0x" + contract.evm.bytecode.object) as `0x${string}`;
     const abi = contract.abi;
 
-    // Deploy
-    const { address: contractAddress, txHash } = await deployContract(bytecode);
+    // Deploy using user's private key
+    const { address: contractAddress, txHash } = await deployContract(bytecode, privateKey);
 
-    // Save agent
+    // Save agent record
     const agentId = String(1000 + getAgentCount() + 1);
     saveAgent({
       id: agentId,
@@ -78,14 +92,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      agent: {
-        id: agentId,
-        contractAddress,
-        txHash,
-        balance,
-      },
+      agent: { id: agentId, contractAddress, txHash },
       abi,
       source,
+      balance,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
