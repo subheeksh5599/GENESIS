@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { generateSolidity } from "@/lib/ai-gen";
-import { deployContract, getBalance } from "@/lib/deployer";
+import { deployContract, getBalance, estimateGas } from "@/lib/deployer";
 import { saveAgent, getAgentCount } from "@/lib/store";
 import { verifyContract } from "@/lib/verifier";
+import { reviewContract, type SecurityReport } from "@/lib/security-review";
 import solc from "solc";
 
 const FAUCET_URL = "https://faucet.testnet.mantle.xyz";
-
 const COMPILER_VERSION = "v0.8.26+commit.8a97fa7a";
 
 export async function POST(request: Request) {
@@ -21,31 +21,33 @@ export async function POST(request: Request) {
     if (!intent) {
       return NextResponse.json({ error: "Strategy description required" }, { status: 400 });
     }
-
     if (!privateKey) {
+      return NextResponse.json({ error: "No wallet connected." }, { status: 400 });
+    }
+
+    // Derive deployer address
+    let deployerAddress = "";
+    try {
+      const { privateKeyToAddress } = await import("viem/accounts");
+      deployerAddress = privateKeyToAddress(privateKey as `0x${string}`);
+    } catch { /* ignore */ }
+
+    // ── STAGE 1: GENERATE ──
+    const source = await generateSolidity(intent, true);
+
+    // ── STAGE 2: SECURITY REVIEW ──
+    const securityReport: SecurityReport = await reviewContract(source);
+
+    if (securityReport.status === "rejected") {
       return NextResponse.json({
-        error: "No wallet connected. Go to the Wallet page first.",
+        error: "Security review rejected deployment.",
+        stage: "review",
+        source,
+        securityReport,
       }, { status: 400 });
     }
 
-    // Check balance
-    let balance = "0";
-    try {
-      balance = await getBalance(privateKey);
-    } catch { /* will fail below */ }
-
-    if (parseFloat(balance) < 0.0001) {
-      return NextResponse.json({
-        error: `Insufficient MNT (${balance} MNT). Get testnet tokens from the faucet.`,
-        balance,
-        faucetUrl: FAUCET_URL,
-      }, { status: 402 });
-    }
-
-    // Generate Solidity with UUPS upgradeable pattern
-    const source = await generateSolidity(intent, true);
-
-    // Compile
+    // ── STAGE 3: COMPILE ──
     const compilerInput = {
       language: "Solidity",
       sources: { "Strategy.sol": { content: source } },
@@ -63,7 +65,12 @@ export async function POST(request: Request) {
         .filter((e: { severity: string }) => e.severity === "error")
         .map((e: { formattedMessage: string }) => e.formattedMessage)
         .join("\n");
-      return NextResponse.json({ error: `Compilation failed:\n${errs}` }, { status: 400 });
+      return NextResponse.json({
+        error: `Compilation failed:\n${errs}`,
+        stage: "compile",
+        source,
+        securityReport,
+      }, { status: 400 });
     }
 
     const contractFile = output.contracts["Strategy.sol"];
@@ -72,17 +79,34 @@ export async function POST(request: Request) {
     const bytecode = ("0x" + contract.evm.bytecode.object) as `0x${string}`;
     const abi = contract.abi;
 
-    // Derive deployer address from private key
-    let deployerAddress = "";
+    // ── STAGE 4: GAS ESTIMATE ──
+    let gasEstimate;
     try {
-      const { privateKeyToAddress } = await import("viem/accounts");
-      deployerAddress = privateKeyToAddress(privateKey as `0x${string}`);
-    } catch { /* fall through */ }
+      gasEstimate = await estimateGas(bytecode);
+    } catch {
+      gasEstimate = { gas: "~250,000", gasPrice: "0.02", costMNT: "0.005", costUSD: "~$0.004" };
+    }
 
-    // Deploy
+    // ── STAGE 5: CHECK BALANCE ──
+    let balance = "0";
+    try { balance = await getBalance(deployerAddress); } catch { /* ignore */ }
+
+    if (parseFloat(balance) < parseFloat(gasEstimate.costMNT)) {
+      return NextResponse.json({
+        error: `Insufficient MNT for gas. Need ${gasEstimate.costMNT} MNT, have ${balance} MNT.`,
+        stage: "preflight",
+        source,
+        securityReport,
+        gasEstimate,
+        balance,
+        faucetUrl: FAUCET_URL,
+      }, { status: 402 });
+    }
+
+    // ── STAGE 6: DEPLOY ──
     const { address: contractAddress, txHash } = await deployContract(bytecode, privateKey);
 
-    // Save agent
+    // ── STAGE 7: SAVE + VERIFY ──
     const agentId = String(1000 + getAgentCount() + 1);
     saveAgent({
       id: agentId,
@@ -102,7 +126,7 @@ export async function POST(request: Request) {
       tvl: "$0",
     });
 
-    // Auto-verify on Mantle Explorer (fire and forget)
+    // Fire-and-forget verification
     verifyContract(contractAddress, source, contractName, COMPILER_VERSION, 200)
       .then(async (result) => {
         if (result.verified) {
@@ -110,17 +134,23 @@ export async function POST(request: Request) {
           updateAgent(agentId, { verified: true });
         }
       })
-      .catch(() => { /* non-blocking */ });
+      .catch(() => {});
 
     return NextResponse.json({
       success: true,
       agent: { id: agentId, contractAddress, txHash, verified: false },
-      abi,
-      source,
-      balance,
+      pipeline: {
+        source,
+        securityReport,
+        gasEstimate,
+        balance,
+        abi,
+      },
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({
+      error: err instanceof Error ? err.message : "Unknown error",
+      stage: "deploy",
+    }, { status: 500 });
   }
 }

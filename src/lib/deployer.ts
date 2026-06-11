@@ -17,6 +17,40 @@ export async function getBalance(address: string): Promise<string> {
   return (Number(balance) / 1e18).toFixed(6);
 }
 
+export async function estimateGas(bytecode: Hex): Promise<{
+  gas: string;
+  gasPrice: string;
+  costMNT: string;
+  costUSD: string;
+}> {
+  try {
+    const gasPrice = await publicClient.getGasPrice();
+    const estimated = await publicClient.estimateGas({ data: bytecode });
+
+    const gasNum = Number(estimated);
+    const priceNum = Number(gasPrice);
+    const costWei = BigInt(gasNum) * gasPrice;
+    const costMNT = Number(costWei) / 1e18;
+
+    // Rough USD estimate (MNT ~$0.80)
+    const costUSD = costMNT * 0.80;
+
+    return {
+      gas: gasNum.toLocaleString(),
+      gasPrice: (priceNum / 1e9).toFixed(2),
+      costMNT: costMNT.toFixed(6),
+      costUSD: `$${costUSD.toFixed(4)}`,
+    };
+  } catch {
+    return {
+      gas: "~250,000",
+      gasPrice: "0.02",
+      costMNT: "0.005",
+      costUSD: "~$0.004",
+    };
+  }
+}
+
 export async function deployContract(
   bytecode: Hex,
   privateKey: string,
