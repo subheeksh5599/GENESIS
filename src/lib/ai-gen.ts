@@ -56,8 +56,7 @@ REQUIREMENTS:
 1. Solidity 0.8.26, MIT license
 2. NatSpec on every function with @notice, @param, @return
 3. Include header comment:
-   /// @custom:project https://github.com/subheeksh5599/GENESIS
-   /// @custom:deployer Genesis Engine — Turing Test 2026
+   /// @custom:deployer Genesis Engine — Mantle Network
 4. Events for every state change (indexed params where possible)
 5. Emergency withdrawal function (onlyOwner, transfers all tokens)
 6. Slippage protection with configurable minAmountOut
@@ -122,8 +121,7 @@ function findMatchingClose(code: string): number {
 function generateTemplateContract(desc: string, upgradeable: boolean): string {
   const header = `// SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
-/// @custom:project https://github.com/subheeksh5599/GENESIS
-/// @custom:deployer Genesis Engine — Turing Test 2026`;
+/// @custom:deployer Genesis Engine — Mantle Network`;
 
   if (upgradeable) {
     return `${header}
