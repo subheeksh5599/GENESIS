@@ -1,10 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { DeployModal } from "@/app/components/dashboard/deploy-modal";
 
 export default function DeployPage() {
   const [open, setOpen] = useState(true);
+  const router = useRouter();
+
+  const handleClose = () => {
+    setOpen(false);
+    router.push("/dashboard");
+  };
 
   return (
     <div className="space-y-8">
@@ -29,7 +36,7 @@ export default function DeployPage() {
         </button>
       </div>
 
-      <DeployModal open={open} onClose={() => {}} onDeployed={() => {}} />
+      <DeployModal open={open} onClose={handleClose} onDeployed={() => router.push("/dashboard/agents")} />
     </div>
   );
 }
