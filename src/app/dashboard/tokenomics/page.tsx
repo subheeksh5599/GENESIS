@@ -8,8 +8,19 @@ export default function TokenomicsPage() {
       <div>
         <h1 className="font-display font-semibold text-2xl tracking-[-0.015em]">Business Model</h1>
         <p className="font-mono text-[0.5rem] tracking-[0.2em] uppercase text-ink-soft mt-0.5">
-          Revenue · Tokenomics · Go-to-Market
+          Coming soon · Roadmap
         </p>
+      </div>
+
+      {/* Upcoming banner */}
+      <div className="bg-[#f0fdf4] border border-[#4ade80]/30 p-5 flex items-center gap-3">
+        <span className="text-lg">◆</span>
+        <div>
+          <div className="font-mono text-[0.52rem] text-[#166534] font-medium">Upcoming Feature</div>
+          <p className="font-mono text-[0.48rem] text-[#15803d]/70">
+            Tokenomics, revenue model, and go-to-market strategy will be implemented post-hackathon. This page represents the planned business architecture.
+          </p>
+        </div>
       </div>
 
       {/* Revenue model */}

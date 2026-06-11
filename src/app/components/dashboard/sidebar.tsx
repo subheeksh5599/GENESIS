@@ -5,7 +5,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: { label: string; icon: string; href: string; upcoming?: boolean }[] = [
   { label: "Overview", icon: "○", href: "/dashboard" },
   { label: "Agents", icon: "⬡", href: "/dashboard/agents" },
   { label: "Deploy", icon: "⊕", href: "/dashboard/deploy" },
@@ -13,7 +13,7 @@ const NAV_ITEMS = [
   { label: "Analytics", icon: "◈", href: "/dashboard/analytics" },
   { label: "Wallet", icon: "◇", href: "/dashboard/wallet" },
   { label: "History", icon: "↗", href: "/dashboard/history" },
-  { label: "Business", icon: "◆", href: "/dashboard/tokenomics" },
+  { label: "Business", icon: "◆", href: "/dashboard/tokenomics", upcoming: true },
 ];
 
 export function Sidebar() {
@@ -33,16 +33,26 @@ export function Sidebar() {
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href;
           return (
-            <Link
-              key={item.label}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
+              <Link
+                key={item.label}
+                href={item.upcoming ? "#" : item.href}
+                onClick={(e) => {
+                  if (item.upcoming) e.preventDefault();
+                  setMobileOpen(false);
+                }}
               className={`flex items-center gap-3 px-4 py-2.5 rounded-sm font-mono text-[0.62rem] tracking-[0.12em] transition-all group ${
-                active ? "bg-white/[0.08] text-white" : "text-white/55 hover:text-white hover:bg-white/[0.05]"
+                active ? "bg-white/[0.08] text-white" : item.upcoming ? "text-white/25 cursor-default" : "text-white/55 hover:text-white hover:bg-white/[0.05]"
               }`}
             >
               <span className="text-[0.8rem] w-5 text-center">{item.icon}</span>
-              {!collapsed && <span className="whitespace-nowrap">{item.label}</span>}
+              {!collapsed && (
+                <span className="whitespace-nowrap">
+                  {item.label}
+                  {item.upcoming && (
+                    <span className="text-[0.45rem] text-white/25 ml-1">(soon)</span>
+                  )}
+                </span>
+              )}
               {active && !collapsed && (
                 <motion.div layoutId="active-nav" className="w-1 h-1 rounded-full bg-accent ml-auto" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
               )}
@@ -98,9 +108,16 @@ export function Sidebar() {
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href;
             return (
-              <Link key={item.label} href={item.href} className={`flex items-center gap-3 px-4 py-2.5 rounded-sm font-mono text-[0.62rem] tracking-[0.12em] transition-all group ${active ? "bg-white/[0.08] text-white" : "text-white/55 hover:text-white hover:bg-white/[0.05]"}`}>
+              <Link key={item.label} href={item.upcoming ? "#" : item.href} onClick={item.upcoming ? (e) => e.preventDefault() : undefined} className={`flex items-center gap-3 px-4 py-2.5 rounded-sm font-mono text-[0.62rem] tracking-[0.12em] transition-all group ${active ? "bg-white/[0.08] text-white" : item.upcoming ? "text-white/25 cursor-default" : "text-white/55 hover:text-white hover:bg-white/[0.05]"}`}>
                 <span className="text-[0.8rem] w-5 text-center">{item.icon}</span>
-                {!collapsed && <span className="whitespace-nowrap">{item.label}</span>}
+                {!collapsed && (
+                <span className="whitespace-nowrap">
+                  {item.label}
+                  {item.upcoming && (
+                    <span className="text-[0.45rem] text-white/25 ml-1">(soon)</span>
+                  )}
+                </span>
+              )}
                 {active && !collapsed && <motion.div layoutId="active-nav" className="w-1 h-1 rounded-full bg-accent ml-auto" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
               </Link>
             );

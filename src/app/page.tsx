@@ -391,7 +391,7 @@ export default function Home() {
                 <br />
                 Strategy royalties reward creators.
                 <br />
-                A protocol, not a project.
+                Roadmap — post-hackathon.
               </p>
             </div>
           </ScrollReveal>
