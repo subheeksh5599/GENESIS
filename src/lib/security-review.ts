@@ -13,8 +13,8 @@ function getClient(): OpenAI | null {
   return _client;
 }
 
-const PRIMARY_MODEL = process.env.NVIDIA_MODEL || "nvidia/llama-3.1-nemotron-ultra-253b-v1";
-const FALLBACK_MODEL = "deepseek-ai/deepseek-r1";
+const PRIMARY_MODEL = process.env.NVIDIA_MODEL || "meta/llama-4-maverick-17b-128e-instruct";
+const FALLBACK_MODEL = "meta/llama-4-maverick-17b-128e-instruct";
 
 // Paschov vulnerability catalog — known patterns to scan for
 const PASCHOV_PATTERNS = `

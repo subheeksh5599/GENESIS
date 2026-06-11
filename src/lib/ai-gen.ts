@@ -14,9 +14,7 @@ function getClient(): OpenAI | null {
 }
 
 const MODELS = {
-  primary: "nvidia/llama-3.1-nemotron-ultra-253b-v1",
-  fast: "meta/llama-4-maverick-17b-128e-instruct",
-  deep: "deepseek-ai/deepseek-r1",
+  primary: "meta/llama-4-maverick-17b-128e-instruct",
 } as const;
 
 const MODEL = process.env.NVIDIA_MODEL || MODELS.primary;
