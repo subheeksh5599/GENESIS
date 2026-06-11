@@ -21,6 +21,7 @@ export async function GET(request: Request) {
       strategy: a.strategy.slice(0, 100),
       protocols: a.protocols,
       contractAddress: a.contractAddress,
+      deployerAddress: a.deployerAddress,
       txHash: a.txHash,
       abi: a.abi,
       source: a.source,

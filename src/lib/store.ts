@@ -9,6 +9,7 @@ export interface StoredAgent {
   strategy: string;
   protocols: string[];
   contractAddress: string;
+  deployerAddress: string;
   txHash: string;
   abi?: Record<string, unknown>[];
   source?: string;

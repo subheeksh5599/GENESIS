@@ -72,6 +72,13 @@ export async function POST(request: Request) {
     const bytecode = ("0x" + contract.evm.bytecode.object) as `0x${string}`;
     const abi = contract.abi;
 
+    // Derive deployer address from private key
+    let deployerAddress = "";
+    try {
+      const { privateKeyToAddress } = await import("viem/accounts");
+      deployerAddress = privateKeyToAddress(privateKey as `0x${string}`);
+    } catch { /* fall through */ }
+
     // Deploy
     const { address: contractAddress, txHash } = await deployContract(bytecode, privateKey);
 
@@ -83,6 +90,7 @@ export async function POST(request: Request) {
       strategy: intent,
       protocols: protocols || [],
       contractAddress,
+      deployerAddress,
       txHash,
       abi,
       source,

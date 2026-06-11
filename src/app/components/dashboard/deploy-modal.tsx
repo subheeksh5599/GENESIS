@@ -33,16 +33,13 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
     setDeploying(true);
     setError("");
 
-    // Read private key from localStorage
+    // Read active private key from wallet history
     let privateKey = "";
     if (typeof window !== "undefined") {
-      const raw = localStorage.getItem("genesis_wallet");
-      if (raw) {
-        try {
-          const w = JSON.parse(raw);
-          privateKey = w.pk;
-        } catch { /* ignore */ }
-      }
+      try {
+        const { getActivePrivateKey } = await import("@/app/lib/wallet-history");
+        privateKey = getActivePrivateKey() || "";
+      } catch { /* ignore */ }
     }
 
     if (!privateKey) {
