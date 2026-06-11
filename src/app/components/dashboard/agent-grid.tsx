@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 interface Agent {
   id: string;
@@ -35,6 +36,7 @@ function timeAgo(dateStr: string): string {
 export function AgentGrid() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const fetchAgents = async () => {
     try {
@@ -101,6 +103,7 @@ export function AgentGrid() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.06 * i, duration: 0.5, ease: "easeOut" }}
           whileHover={{ y: -2 }}
+          onClick={() => router.push(`/dashboard/agents/${agent.id}`)}
         >
           <div className="flex items-start justify-between mb-5">
             <div>

@@ -10,6 +10,9 @@ export interface StoredAgent {
   protocols: string[];
   contractAddress: string;
   txHash: string;
+  abi?: Record<string, unknown>[];
+  source?: string;
+  verified?: boolean;
   createdAt: string;
   deployedAt: number;
   status: "live" | "paused" | "failed";
@@ -36,6 +39,10 @@ export function saveAgent(agent: StoredAgent) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(agents, null, 2));
 }
 
+export function getAgentById(id: string): StoredAgent | null {
+  return loadAgents().find((a) => a.id === id) || null;
+}
+
 export function getAgentCount(): number {
   return loadAgents().length;
 }
@@ -48,4 +55,12 @@ export function getTotalTVL(): string {
   if (total >= 1e6) return `$${(total / 1e6).toFixed(1)}M`;
   if (total >= 1e3) return `$${(total / 1e3).toFixed(0)}K`;
   return `$${total.toFixed(0)}`;
+}
+
+export function updateAgent(id: string, updates: Partial<StoredAgent>) {
+  const agents = loadAgents();
+  const idx = agents.findIndex((a) => a.id === id);
+  if (idx === -1) return;
+  agents[idx] = { ...agents[idx], ...updates };
+  fs.writeFileSync(DATA_FILE, JSON.stringify(agents, null, 2));
 }

@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { generateSolidity } from "@/lib/ai-gen";
 import { deployContract, getBalance } from "@/lib/deployer";
 import { saveAgent, getAgentCount } from "@/lib/store";
+import { verifyContract } from "@/lib/verifier";
 import solc from "solc";
 
 const FAUCET_URL = "https://faucet.testnet.mantle.xyz";
+
+const COMPILER_VERSION = "v0.8.26+commit.8a97fa7a";
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +24,7 @@ export async function POST(request: Request) {
 
     if (!privateKey) {
       return NextResponse.json({
-        error: "No wallet connected. Generate or paste a private key in the Wallet panel first.",
+        error: "No wallet connected. Go to the Wallet page first.",
       }, { status: 400 });
     }
 
@@ -29,20 +32,18 @@ export async function POST(request: Request) {
     let balance = "0";
     try {
       balance = await getBalance(privateKey);
-    } catch {
-      // will fail below
-    }
+    } catch { /* will fail below */ }
 
     if (parseFloat(balance) < 0.0001) {
       return NextResponse.json({
-        error: `Insufficient MNT balance (${balance} MNT). Get testnet tokens from the faucet.`,
+        error: `Insufficient MNT (${balance} MNT). Get testnet tokens from the faucet.`,
         balance,
         faucetUrl: FAUCET_URL,
       }, { status: 402 });
     }
 
-    // Generate Solidity
-    const source = await generateSolidity(intent);
+    // Generate Solidity with UUPS upgradeable pattern
+    const source = await generateSolidity(intent, true);
 
     // Compile
     const compilerInput = {
@@ -71,10 +72,10 @@ export async function POST(request: Request) {
     const bytecode = ("0x" + contract.evm.bytecode.object) as `0x${string}`;
     const abi = contract.abi;
 
-    // Deploy using user's private key
+    // Deploy
     const { address: contractAddress, txHash } = await deployContract(bytecode, privateKey);
 
-    // Save agent record
+    // Save agent
     const agentId = String(1000 + getAgentCount() + 1);
     saveAgent({
       id: agentId,
@@ -83,6 +84,9 @@ export async function POST(request: Request) {
       protocols: protocols || [],
       contractAddress,
       txHash,
+      abi,
+      source,
+      verified: false,
       createdAt: new Date().toISOString(),
       deployedAt: Date.now(),
       status: "live",
@@ -90,9 +94,19 @@ export async function POST(request: Request) {
       tvl: "$0",
     });
 
+    // Auto-verify on Mantle Explorer (fire and forget)
+    verifyContract(contractAddress, source, contractName, COMPILER_VERSION, 200)
+      .then(async (result) => {
+        if (result.verified) {
+          const { updateAgent } = await import("@/lib/store");
+          updateAgent(agentId, { verified: true });
+        }
+      })
+      .catch(() => { /* non-blocking */ });
+
     return NextResponse.json({
       success: true,
-      agent: { id: agentId, contractAddress, txHash },
+      agent: { id: agentId, contractAddress, txHash, verified: false },
       abi,
       source,
       balance,

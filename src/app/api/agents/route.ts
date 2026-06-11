@@ -1,10 +1,19 @@
 import { NextResponse } from "next/server";
-import { loadAgents, getTotalTVL } from "@/lib/store";
+import { loadAgents, getAgentById, getTotalTVL } from "@/lib/store";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (id) {
+    const agent = getAgentById(id);
+    if (!agent) {
+      return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+    }
+    return NextResponse.json({ agent });
+  }
+
   const agents = loadAgents();
-  const tvl = getTotalTVL();
-
   return NextResponse.json({
     agents: agents.map((a) => ({
       id: a.id,
@@ -13,6 +22,9 @@ export async function GET() {
       protocols: a.protocols,
       contractAddress: a.contractAddress,
       txHash: a.txHash,
+      abi: a.abi,
+      source: a.source,
+      verified: a.verified,
       createdAt: a.createdAt,
       status: a.status,
       pnl: a.pnl,
@@ -21,7 +33,7 @@ export async function GET() {
     stats: {
       total: agents.length,
       live: agents.filter((a) => a.status === "live").length,
-      tvl,
+      tvl: getTotalTVL(),
     },
   });
 }
