@@ -377,6 +377,50 @@ export default function Home() {
         transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }}
       />
 
+      {/* ═══════════════ BUSINESS ═══════════════ */}
+      <section className="px-9 py-28 lg:py-36">
+        <div className="max-w-[1400px] mx-auto">
+          <ScrollReveal>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-end mb-16 lg:mb-20">
+              <h2 className="font-display font-semibold text-[clamp(2rem,3.5vw,3.5rem)] leading-[1.08] tracking-[-0.015em]">
+                Built to{" "}
+                <em className="italic text-accent not-italic">last</em>.
+              </h2>
+              <p className="font-mono text-[0.56rem] tracking-[0.12em] uppercase text-ink-soft leading-[2]">
+                Deployment fees align incentives.
+                <br />
+                Strategy royalties reward creators.
+                <br />
+                A protocol, not a project.
+              </p>
+            </div>
+          </ScrollReveal>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              { k: "Deployment Fee", v: "0.1%", d: "On TVL. Charged only when strategies are profitable. Users pay nothing unless they earn." },
+              { k: "Creator Royalty", v: "5%", d: "Earn when others clone your top-performing strategy. Marketplace flywheel drives quality." },
+              { k: "$GENESIS Token", v: "100M", d: "Governance, fee discounts, staking yield, gas sponsorship. Token holders direct the protocol." },
+            ].map((m, i) => (
+              <ScrollReveal key={i} delay={i * 0.1}>
+                <div className="bg-white border border-border p-8 hover:border-ink/15 transition-colors">
+                  <div className="font-mono text-[0.48rem] tracking-[0.15em] uppercase text-ink-soft mb-3">{m.k}</div>
+                  <div className="font-display font-semibold text-3xl mb-4">{m.v}</div>
+                  <p className="font-mono text-[0.54rem] text-ink-soft leading-relaxed">{m.d}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <motion.div
+        className="mx-9 h-px bg-border origin-left"
+        initial={{ scaleX: 0 }}
+        whileInView={{ scaleX: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] }}
+      />
+
       {/* ═══════════════ CTA ═══════════════ */}
       <section className="px-9 py-32 lg:py-40 flex flex-col items-center text-center">
         <ScrollReveal>
