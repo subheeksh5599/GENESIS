@@ -7,8 +7,8 @@ import Link from "next/link";
 
 const NAV_ITEMS: { label: string; icon: string; href: string; upcoming?: boolean }[] = [
   { label: "Overview", icon: "○", href: "/dashboard" },
-  { label: "Agents", icon: "⬡", href: "/dashboard/agents" },
-  { label: "Deploy", icon: "⊕", href: "/dashboard/deploy" },
+  { label: "Protocols", icon: "⬡", href: "/dashboard/agents" },
+  { label: "Synthesize", icon: "⊕", href: "/dashboard/deploy" },
   { label: "Strategies", icon: "⊡", href: "/dashboard/strategies" },
   { label: "Analytics", icon: "◈", href: "/dashboard/analytics" },
   { label: "Wallet", icon: "◇", href: "/dashboard/wallet" },

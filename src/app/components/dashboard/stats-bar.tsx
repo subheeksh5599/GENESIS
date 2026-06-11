@@ -48,16 +48,16 @@ export function StatsBar() {
   const items = [
     {
       value: loading ? "..." : stats?.total.toLocaleString() ?? "0",
-      label: "Contracts Deployed",
+      label: "Protocols Executed",
     },
     {
       value: stats?.tvl ?? "$0",
       label: "Total Value Locked",
     },
-    { value: loading ? "..." : `${stats?.live ?? 0}`, label: "Active Agents" },
+    { value: loading ? "..." : `${stats?.live ?? 0}`, label: "Active Protocols" },
     {
       value: loading ? "..." : stats?.needsFaucet ? "Low" : stats?.balance ? `${parseFloat(stats.balance).toFixed(3)} MNT` : "0 MNT",
-      label: "Deployer Balance",
+      label: "Wallet Balance",
       faucet: stats?.needsFaucet,
       faucetUrl: stats?.faucetUrl,
     },

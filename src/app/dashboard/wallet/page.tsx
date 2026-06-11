@@ -60,7 +60,7 @@ export default function WalletPage() {
     <div className="space-y-8">
       <div>
         <h1 className="font-display font-semibold text-2xl tracking-[-0.015em]">Wallet</h1>
-        <p className="font-mono text-[0.5rem] tracking-[0.2em] uppercase text-ink-soft mt-0.5">{wallet ? "Connected" : "Connect to deploy"} · {agentCount} agents deployed</p>
+        <p className="font-mono text-[0.5rem] tracking-[0.2em] uppercase text-ink-soft mt-0.5">{wallet ? "Connected" : "Connect to deploy"} · {agentCount} protocols executed</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -87,7 +87,7 @@ export default function WalletPage() {
               <motion.div key="wallet" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-surface-alt border border-border p-4"><div className="font-mono text-[0.45rem] tracking-[0.15em] uppercase text-ink-soft mb-1">Balance</div><div className={`font-display font-semibold text-2xl ${needsFaucet ? "text-[#fbbf24]" : "text-[#4ade80]"}`}>{balance} MNT</div></div>
-                  <div className="bg-surface-alt border border-border p-4"><div className="font-mono text-[0.45rem] tracking-[0.15em] uppercase text-ink-soft mb-1">Deployments</div><div className="font-display font-semibold text-2xl">{agentCount}</div></div>
+                  <div className="bg-surface-alt border border-border p-4"><div className="font-mono text-[0.45rem] tracking-[0.15em] uppercase text-ink-soft mb-1">Executions</div><div className="font-display font-semibold text-2xl">{agentCount}</div></div>
                 </div>
                 <div><div className="font-mono text-[0.48rem] tracking-[0.15em] uppercase text-ink-soft mb-2">Address</div><div className="font-mono text-[0.54rem] text-ink bg-surface-alt border border-border p-3 break-all">{wallet.addr}</div><button onClick={() => navigator.clipboard.writeText(wallet.addr)} className="font-mono text-[0.46rem] text-accent hover:underline mt-1.5 tracking-[0.05em]">Copy address</button></div>
                 <div><div className="font-mono text-[0.48rem] tracking-[0.15em] uppercase text-ink-soft mb-2 flex items-center justify-between">Private Key<button onClick={() => setShowPk(!showPk)} className="font-mono text-[0.42rem] text-accent hover:underline">{showPk ? "HIDE" : "REVEAL"}</button></div>{showPk && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="font-mono text-[0.52rem] text-[#dc2626] bg-[#fef2f2] border border-[#fecaca] p-3 break-all">{wallet.pk}</motion.div>}</div>

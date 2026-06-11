@@ -49,10 +49,10 @@ export default function Home() {
 
             <h1 className="font-display font-semibold text-[clamp(3rem,7vw,7rem)] leading-[0.95] tracking-[-0.025em] mb-10">
               {[
-                ["Code", false],
+                ["Protocols", false],
                 ["that", false],
-                ["writes", true],
-                ["itself.", true],
+                ["verify", true],
+                ["themselves.", true],
               ].map(([word, italic], i) => (
                 <span key={i} className="inline-block overflow-hidden align-top mr-[0.25em]">
                   <motion.span
@@ -72,14 +72,14 @@ export default function Home() {
             </h1>
 
             <motion.p
-              className="font-mono text-[0.62rem] tracking-[0.1em] uppercase text-ink-soft max-w-[360px] leading-[2.2]"
+              className="font-mono text-[0.62rem] tracking-[0.1em] uppercase text-ink-soft max-w-[380px] leading-[2.2]"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.8, ease: "easeOut" }}
             >
-              An autonomous AI engine that generates, formally verifies, and
-              deploys Solidity contracts on Mantle. No human review. No audit.
-              No fear.
+              Autonomous protocol synthesis engine. Intent becomes specification.
+              Specification is verified. Verified protocols deploy to Mantle.
+              The system cannot execute what it cannot prove correct.
             </motion.p>
           </div>
 
@@ -127,9 +127,9 @@ export default function Home() {
           {[
             {
               num: "01",
-              label: "Intent",
-              title: "Speak the strategy.",
-              desc: "Describe your DeFi intent in natural language. The engine parses complexity, risk targets, and protocol constraints — translating human language into machine-executable strategy across Mantle's DeFi surface.",
+              label: "Specify",
+              title: "Express the intent.",
+              desc: "Describe the desired protocol behavior in natural language. The engine translates intent into a formal specification — defining invariants, state transitions, and economic constraints. No code required.",
               visual: (
                 <div className="w-full max-w-[420px] mx-auto bg-white border border-border p-10">
                   <div className="space-y-4 font-mono text-[0.7rem] text-ink-soft leading-relaxed">
@@ -155,9 +155,9 @@ export default function Home() {
             },
             {
               num: "02",
-              label: "Forge",
-              title: "Compile the contract.",
-              desc: "The engine writes production Solidity inline. Foundry tests execute in real-time. Halmos symbolic execution proves correctness — mathematical certainty, not human hope.",
+              label: "Verify",
+              title: "Prove correctness.",
+              desc: "The Paschov verification engine checks the protocol against 20 vulnerability classes. Every finding is confidence-scored. Critical violations block execution. The system cannot deploy what it cannot verify.",
               visual: (
                 <div className="w-full max-w-[420px] mx-auto bg-charcoal p-10 relative">
                   <div className="font-mono text-[0.58rem] leading-[2] text-[#60a5fa]">
@@ -207,9 +207,9 @@ export default function Home() {
             },
             {
               num: "03",
-              label: "Deploy",
-              title: "Launch on Mantle.",
-              desc: "The verified contract deploys to Mantle Network. An ERC-8004 identity NFT is minted — an on-chain record of creation, verification, and strategy — immutable and trustless.",
+              label: "Execute",
+              title: "Deploy on Mantle.",
+              desc: "Verified protocols compile and deploy to Mantle Network. An ERC-8004 identity is minted — creating a permanent, verifiable record of protocol specification, correctness proof, and execution on-chain.",
               visual: (
                 <div className="w-full max-w-[420px] mx-auto bg-charcoal p-10">
                   <div className="font-mono text-[0.6rem] leading-[2.4]">
@@ -281,13 +281,13 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-end mb-20 lg:mb-28">
               <h2 className="font-display font-semibold text-[clamp(2.2rem,4vw,4rem)] leading-[1.08] tracking-[-0.015em]">
                 Why it{" "}
-                <em className="italic text-accent not-italic">doesn&apos;t</em>{" "}
-                break.
+                <em className="italic text-accent not-italic">cannot</em>{" "}
+                deploy invalid protocols.
               </h2>
               <p className="font-mono text-[0.56rem] tracking-[0.15em] uppercase text-white/25 leading-[2]">
-                Three layers of mathematical certainty.
+                Three gates between intent and execution.
                 <br />
-                Zero layers of human trust.
+                Zero trust required.
               </p>
             </div>
           </ScrollReveal>
@@ -297,20 +297,20 @@ export default function Home() {
               {
                 icon: "⊢",
                 label: "01 · Correctness",
-                title: "Formal Verification",
-                desc: "Halmos symbolic execution and Foundry fuzz testing. Mathematical proof that every execution path is safe. Not an audit — a theorem.",
+                title: "Correctness Gate",
+                desc: "Paschov verification engine checks every protocol against 20 vulnerability classes. Confidence-scored findings. Critical violations gate execution. The system cannot deploy what it cannot verify.",
               },
               {
                 icon: "⬡",
                 label: "02 · Identity",
-                title: "ERC-8004 Protocol",
-                desc: "Every agent receives a permanent on-chain identity. Reputation registry, validation proofs, and cryptographic origin — all recorded on Mantle.",
+                title: "Protocol Identity",
+                desc: "Every synthesized protocol receives a permanent on-chain identity via ERC-8004. Reputation registry, validation proofs, and cryptographic origin — all recorded on Mantle.",
               },
               {
                 icon: "◈",
                 label: "03 · Settlement",
-                title: "Mantle ZK Finality",
-                desc: "ZK validity proofs secure every state transition. $4B+ in community-owned assets. Institutional-grade settlement for autonomous agent execution.",
+                title: "Mantle Settlement",
+                desc: "ZK validity proofs secure every state transition. $4B+ in community-owned assets. Institutional-grade settlement for autonomous protocol execution.",
               },
             ].map((item, i) => (
               <ScrollReveal key={i} delay={i * 0.12}>
@@ -343,7 +343,7 @@ export default function Home() {
               className="font-display font-semibold text-[clamp(5rem,12vw,12rem)] leading-[0.88] tracking-[-0.03em]"
             />
             <p className="font-mono text-[0.54rem] tracking-[0.28em] uppercase text-ink-soft mt-4">
-              Autonomous contracts deployed
+              Verified protocols executed
             </p>
           </ScrollReveal>
 
@@ -352,7 +352,7 @@ export default function Home() {
               {[
                 { n: "$24.7M", l: "Total Value Locked" },
                 { n: "99.97%", l: "Verification Pass Rate" },
-                { n: "3.2s", l: "Average Generation" },
+                { n: "3.2s", l: "Avg. Synthesis" },
                 { n: "6", l: "Protocol Integrations" },
               ].map((s, i) => (
                 <div key={i} className="border-t border-border pt-7">
@@ -438,7 +438,7 @@ export default function Home() {
             Intent{" "}
             <em className="italic text-accent not-italic">in</em>.
             <br />
-            Contract{" "}
+            Protocol{" "}
             <em className="italic text-accent not-italic">out</em>.
           </h2>
         </ScrollReveal>
@@ -451,7 +451,7 @@ export default function Home() {
             transition={{ duration: 0.3, ease: "easeOut" }}
             onClick={() => router.push("/dashboard")}
           >
-            Deploy an Agent
+            Synthesize a Protocol
           </motion.button>
         </ScrollReveal>
 

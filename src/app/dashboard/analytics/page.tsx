@@ -40,8 +40,8 @@ export default function AnalyticsPage() {
 
       <div className="grid grid-cols-3 gap-5">
         {[
-          { val: stats.total.toLocaleString(), label: "Total Deployments" },
-          { val: stats.live.toString(), label: "Live Agents" },
+          { val: stats.total.toLocaleString(), label: "Total Executions" },
+          { val: stats.live.toString(), label: "Live Protocols" },
           { val: stats.tvl, label: "Total Value Locked" },
         ].map((s) => (
           <div key={s.label} className="bg-white border border-border p-6">
@@ -76,7 +76,7 @@ export default function AnalyticsPage() {
             );
           })}
           {stats.agents.length === 0 && (
-            <p className="font-mono text-[0.55rem] text-muted text-center py-8">Deploy agents to see performance data</p>
+            <p className="font-mono text-[0.55rem] text-muted text-center py-8">Execute protocols to see performance data</p>
           )}
         </div>
       </div>
@@ -93,7 +93,7 @@ export default function AnalyticsPage() {
             </div>
           ))}
           {stats.agents.length === 0 && (
-            <p className="font-mono text-[0.55rem] text-muted text-center py-8">No deployments yet</p>
+            <p className="font-mono text-[0.55rem] text-muted text-center py-8">No executions yet</p>
           )}
         </div>
       </div>

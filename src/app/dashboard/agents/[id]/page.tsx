@@ -45,8 +45,8 @@ export default function AgentDetailPage() {
   if (!agent) {
     return (
       <div className="text-center py-20">
-        <h2 className="font-display font-semibold text-2xl mb-2">Agent not found</h2>
-        <p className="font-mono text-[0.58rem] text-ink-soft">This agent doesn&apos;t exist or was removed.</p>
+        <h2 className="font-display font-semibold text-2xl mb-2">Protocol not found</h2>
+        <p className="font-mono text-[0.58rem] text-ink-soft">This protocol doesn&apos;t exist or was removed.</p>
       </div>
     );
   }

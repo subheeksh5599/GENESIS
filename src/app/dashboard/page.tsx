@@ -30,7 +30,7 @@ export default function DashboardPage() {
             onClick={() => setDeployOpen(true)}
             className="font-display italic text-sm text-white bg-ink px-6 py-2.5 tracking-[0.03em] hover:bg-accent transition-colors"
           >
-            + Deploy Agent
+            + Synthesize Protocol
           </button>
         </div>
       </header>
@@ -40,7 +40,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
           <div className="xl:col-span-3 space-y-5">
             <div className="flex items-center justify-between">
-              <h2 className="font-display font-semibold text-lg">Active Agents</h2>
+              <h2 className="font-display font-semibold text-lg">Active Protocols</h2>
             </div>
             <div key={refreshKey}>
               <AgentGrid />

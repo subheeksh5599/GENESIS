@@ -30,9 +30,9 @@ export default function AgentsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display font-semibold text-2xl tracking-[-0.015em]">Agents</h1>
+          <h1 className="font-display font-semibold text-2xl tracking-[-0.015em]">Protocols</h1>
           <p className="font-mono text-[0.5rem] tracking-[0.2em] uppercase text-ink-soft mt-0.5">
-            {agents.length} deployed on Mantle
+            {agents.length} synthesized on Mantle
           </p>
         </div>
       </div>
@@ -50,8 +50,8 @@ export default function AgentsPage() {
       ) : agents.length === 0 ? (
         <div className="bg-white border border-dashed border-muted p-20 text-center">
           <div className="text-5xl mb-4 text-muted">⬡</div>
-          <h3 className="font-display font-semibold text-xl mb-2">No agents yet</h3>
-          <p className="font-mono text-[0.58rem] text-ink-soft">Deploy your first AI-generated contract from the Deploy tab.</p>
+          <h3 className="font-display font-semibold text-xl mb-2">No protocols yet</h3>
+          <p className="font-mono text-[0.58rem] text-ink-soft">Synthesize your first protocol from the Synthesize tab.</p>
         </div>
       ) : (
         <div className="bg-white border border-border">

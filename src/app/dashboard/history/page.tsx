@@ -67,7 +67,7 @@ export default function HistoryPage() {
       <div>
         <h1 className="font-display font-semibold text-2xl tracking-[-0.015em]">History</h1>
         <p className="font-mono text-[0.5rem] tracking-[0.2em] uppercase text-ink-soft mt-0.5">
-          {wallets.length} wallets · {agents.length} deployments
+          {wallets.length} wallets · {agents.length} executions
         </p>
       </div>
 
@@ -75,7 +75,7 @@ export default function HistoryPage() {
         <div className="bg-white border border-dashed border-muted p-20 text-center">
           <div className="text-5xl mb-4 text-muted">↗</div>
           <h3 className="font-display font-semibold text-xl mb-2">No history yet</h3>
-          <p className="font-mono text-[0.58rem] text-ink-soft">Generate a wallet and deploy an agent.</p>
+          <p className="font-mono text-[0.58rem] text-ink-soft">Connect a wallet and synthesize a protocol.</p>
         </div>
       ) : (
         wallets.map((w) => {

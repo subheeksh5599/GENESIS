@@ -84,7 +84,7 @@ export function ActivityFeed() {
       <div className="bg-white border border-dashed border-muted p-10 text-center">
         <div className="text-2xl mb-2 text-muted">—</div>
         <p className="font-mono text-[0.52rem] text-muted tracking-[0.08em]">
-          Deploy an agent to see activity
+          Synthesize a protocol to see activity
         </p>
       </div>
     );

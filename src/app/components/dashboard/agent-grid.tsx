@@ -84,10 +84,9 @@ export function AgentGrid() {
         transition={{ duration: 0.5 }}
       >
         <div className="text-4xl mb-4 text-muted">⊕</div>
-        <h3 className="font-display font-semibold text-xl mb-2">No agents deployed</h3>
+        <h3 className="font-display font-semibold text-xl mb-2">No protocols deployed</h3>
         <p className="font-mono text-[0.58rem] text-ink-soft tracking-[0.06em]">
-          Click &ldquo;Deploy Agent&rdquo; to create your first AI-generated smart
-          contract on Mantle.
+          Click &ldquo;Synthesize Protocol&rdquo; to create your first verified protocol on Mantle.
         </p>
       </motion.div>
     );

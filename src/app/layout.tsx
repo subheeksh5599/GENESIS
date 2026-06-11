@@ -22,9 +22,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Genesis — The Machine That Writes Itself",
+  title: "Genesis — Autonomous Protocol Synthesis Engine",
   description:
-    "An autonomous AI engine that generates, formally verifies, and deploys Solidity smart contracts on Mantle Network. No human review. No audit. No fear.",
+    "Autonomous protocol synthesis on Mantle Network. Intent becomes specification. Specification is verified. Verified protocols deploy. The system cannot execute what it cannot prove correct.",
 };
 
 export default function RootLayout({
