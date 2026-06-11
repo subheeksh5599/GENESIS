@@ -49,9 +49,12 @@ INFORMATIONAL:
 20. LICENSE DECLARATION — Missing or incorrect SPDX license identifier.
 
 SCORING:
-- 0 critical + 0 high = APPROVED (score 80+)
-- 0 critical + 1-2 high = WARNING (score 60-79)
-- 1+ critical OR 3+ high = REJECTED (score < 60)
+- 0 critical + 0 high = LOW RISK (score 85+)
+- 0 critical + 1-2 high = MEDIUM RISK (score 65-84)
+- 1+ critical OR 3+ high = HIGH RISK (score <65, deployment blocked)
+
+RISK LEVEL OUTPUT: Always include "riskLevel": "low" | "medium" | "high"
+CONFIDENCE: Each finding must include a "confidence": <0.0-1.0> indicating how certain the model is.
 `;
 
 export interface SecurityFinding {
@@ -60,14 +63,17 @@ export interface SecurityFinding {
   line: number;
   description: string;
   recommendation: string;
+  confidence: number;
 }
 
 export interface SecurityReport {
   score: number;
+  riskLevel: "low" | "medium" | "high";
   status: "approved" | "warning" | "rejected";
   findings: SecurityFinding[];
   summary: string;
   modelUsed: string;
+  disclaimer: string;
 }
 
 export async function reviewContract(source: string): Promise<SecurityReport> {
@@ -89,21 +95,30 @@ export async function reviewContract(source: string): Promise<SecurityReport> {
 
 Return a JSON object with this structure (no other text):
 {
+  "riskLevel": "low|medium|high",
   "score": <0-100>,
   "findings": [
     {
       "severity": "critical|high|medium|info",
       "category": "<pattern name from catalog>",
-      "line": <line number or 0 if not line-specific>,
+      "line": <line number or 0>,
       "description": "<what you found>",
-      "recommendation": "<how to fix>"
+      "recommendation": "<how to fix>",
+      "confidence": <0.0-1.0>
     }
   ],
-  "summary": "<one sentence verdict>"
+  "summary": "<one sentence verdict including what the contract DOES WELL and what the MAIN CONCERN is>"
 }
 
-SCORING RULES: -10 per critical, -7 per high, -3 per medium, -1 per info.
-STATUS: score >= 80 = "approved", 60-79 = "warning", <60 = "rejected".
+RISK LEVEL:
+- "low" = no critical or high findings, score >= 85
+- "medium" = some medium/high findings but no critical, score 65-84
+- "high" = critical findings or many highs, score < 65
+
+CONFIDENCE: Score 0.0-1.0 per finding. 1.0 = certain (static pattern match), 0.5 = likely, 0.2 = speculative.
+Only mark something as a finding if confidence > 0.4.
+
+SCORING: -10 per critical, -7 per high, -3 per medium, -1 per info.
 
 ${PASCHOV_PATTERNS}`,
           },
@@ -134,39 +149,47 @@ ${PASCHOV_PATTERNS}`,
 }
 
 function parseResponse(text: string): Omit<SecurityReport, "modelUsed"> {
+  const disclaimer = "⚠ AI-generated code carries inherent risk. This review is automated — it does not replace a professional security audit. Always review contract code before depositing real funds.";
+
   try {
-    // Try direct JSON parse
     const jsonStr = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
     const data = JSON.parse(jsonStr);
-    return {
-      score: Math.max(0, Math.min(100, data.score || 70)),
-      status: "warning",
-      findings: Array.isArray(data.findings) ? data.findings : [],
-      summary: data.summary || "Security review completed.",
-    };
-  } catch {
-    // Fallback: extract score from text
-    const scoreMatch = text.match(/score.*?(\d{1,3})/i);
-    const score = scoreMatch ? parseInt(scoreMatch[1]) : 70;
+    const score = Math.max(0, Math.min(100, data.score || 70));
+    const riskLevel = data.riskLevel || (score >= 85 ? "low" : score >= 65 ? "medium" : "high");
     return {
       score,
-      status: score >= 80 ? "approved" : score >= 60 ? "warning" : "rejected",
+      riskLevel,
+      status: riskLevel === "high" ? "rejected" : riskLevel === "medium" ? "warning" : "approved",
+      findings: (Array.isArray(data.findings) ? data.findings : []).map((f: Record<string, unknown>) => ({
+        ...f,
+        confidence: typeof f.confidence === "number" ? f.confidence : 0.7,
+      })),
+      summary: data.summary || "Security review completed.",
+      disclaimer,
+    };
+  } catch {
+    const scoreMatch = text.match(/score.*?(\d{1,3})/i);
+    const score = scoreMatch ? parseInt(scoreMatch[1]) : 70;
+    const riskLevel = score >= 85 ? "low" : score >= 65 ? "medium" : "high";
+    return {
+      score,
+      riskLevel,
+      status: riskLevel === "high" ? "rejected" : riskLevel === "medium" ? "warning" : "approved",
       findings: [],
       summary: "Review completed but response parsing failed. Score estimated from raw output.",
+      disclaimer,
     };
   }
 }
 
 function offlineReview(source: string): SecurityReport {
-  // Static analysis fallback (no LLM needed)
+  const disclaimer = "⚠ AI-generated code carries inherent risk. This review is automated — it does not replace a professional security audit. Always review contract code before depositing real funds.";
+
   const findings: SecurityFinding[] = [];
 
-  // Check for common patterns
   if (!source.includes("ReentrancyGuard") && !source.includes("nonReentrant")) {
     findings.push({
-      severity: "high",
-      category: "REENTRANCY",
-      line: 0,
+      severity: "high", category: "REENTRANCY", line: 0, confidence: 0.9,
       description: "No ReentrancyGuard used on state-modifying functions.",
       recommendation: "Add ReentrancyGuard from OpenZeppelin and use nonReentrant modifier.",
     });
@@ -174,9 +197,7 @@ function offlineReview(source: string): SecurityReport {
 
   if (!source.includes("Ownable") && !source.includes("onlyOwner")) {
     findings.push({
-      severity: "critical",
-      category: "MISSING ACCESS CONTROL",
-      line: 0,
+      severity: "critical", category: "MISSING ACCESS CONTROL", line: 0, confidence: 0.95,
       description: "No access control pattern detected.",
       recommendation: "Use OpenZeppelin Ownable and add onlyOwner to sensitive functions.",
     });
@@ -184,9 +205,7 @@ function offlineReview(source: string): SecurityReport {
 
   if (source.includes(".call{") && !source.includes("require(success")) {
     findings.push({
-      severity: "high",
-      category: "UNCHECKED EXTERNAL CALLS",
-      line: 0,
+      severity: "high", category: "UNCHECKED EXTERNAL CALLS", line: 0, confidence: 0.85,
       description: "Low-level .call() without checking return value.",
       recommendation: "Require successful return from all low-level calls.",
     });
@@ -194,9 +213,7 @@ function offlineReview(source: string): SecurityReport {
 
   if (!source.includes("emergency") && !source.includes("Emergency")) {
     findings.push({
-      severity: "medium",
-      category: "MISSING EMERGENCY WITHDRAWAL",
-      line: 0,
+      severity: "medium", category: "MISSING EMERGENCY WITHDRAWAL", line: 0, confidence: 0.75,
       description: "No emergency withdrawal function found.",
       recommendation: "Add an onlyOwner emergencyWithdraw() to recover stuck funds.",
     });
@@ -204,10 +221,8 @@ function offlineReview(source: string): SecurityReport {
 
   if (source.includes("^0.8")) {
     findings.push({
-      severity: "info",
-      category: "FLOATING PRAGMA",
-      line: 0,
-      description: "Floating pragma (^0.8.x) used instead of fixed version.",
+      severity: "info", category: "FLOATING PRAGMA", line: 0, confidence: 0.98,
+      description: "Floating pragma used instead of fixed version.",
       recommendation: "Use fixed pragma: pragma solidity 0.8.26;",
     });
   }
@@ -215,14 +230,16 @@ function offlineReview(source: string): SecurityReport {
   const criticals = findings.filter((f) => f.severity === "critical").length;
   const highs = findings.filter((f) => f.severity === "high").length;
   const score = Math.max(0, 100 - criticals * 10 - highs * 7);
+  const riskLevel = criticals > 0 ? "high" : highs > 0 ? "medium" : "low";
 
   return {
-    score,
-    status: score >= 80 ? "approved" : score >= 60 ? "warning" : "rejected",
+    score, riskLevel,
+    status: riskLevel === "high" ? "rejected" : riskLevel === "medium" ? "warning" : "approved",
     findings,
     summary: findings.length > 0
-      ? `Found ${findings.length} issue(s): ${criticals} critical, ${highs} high.`
-      : "No critical issues detected in static analysis.",
+      ? `Found ${findings.length} issue(s): ${criticals} critical, ${highs} high — ${riskLevel.toUpperCase()} RISK.`
+      : "No critical issues detected in static analysis. LOW RISK — but always review before using real funds.",
     modelUsed: "static-analysis",
+    disclaimer,
   };
 }
