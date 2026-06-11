@@ -77,6 +77,10 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
 
       setResult(data.agent);
       setDeployed(true);
+      // Show note if using template fallback (no AI)
+      if (data.source?.includes("Auto-generated DeFi strategy for Mantle Network")) {
+        setError(""); // clear any previous error
+      }
       onDeployed();
     } catch {
       setError("Network error. Check your connection.");
