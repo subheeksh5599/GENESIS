@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 interface Agent {
@@ -7,92 +8,92 @@ interface Agent {
   name: string;
   strategy: string;
   protocols: string[];
-  tvl: string;
+  contractAddress: string;
+  txHash: string;
+  createdAt: string;
+  status: "live" | "paused" | "failed";
   pnl: string;
-  pnlUp: boolean;
-  deployed: string;
-  status: "live" | "paused" | "draft";
+  tvl: string;
 }
-
-const MOCK_AGENTS: Agent[] = [
-  {
-    id: "8471",
-    name: "Mantle Yield Vault",
-    strategy: "mETH staking + Agni LP compounding",
-    protocols: ["mETH", "Agni", "Merchant Moe"],
-    tvl: "$1.4M",
-    pnl: "+18.2%",
-    pnlUp: true,
-    deployed: "2h ago",
-    status: "live",
-  },
-  {
-    id: "6234",
-    name: "Stable Flow Optimizer",
-    strategy: "USDY yield routing + cross-DEX arb",
-    protocols: ["USDY", "Agni"],
-    tvl: "$892K",
-    pnl: "+12.7%",
-    pnlUp: true,
-    deployed: "1d ago",
-    status: "live",
-  },
-  {
-    id: "5012",
-    name: "Delta Neutral Hedge",
-    strategy: "mETH long + perp short hedge",
-    protocols: ["mETH", "Merchant Moe"],
-    tvl: "$3.2M",
-    pnl: "+24.1%",
-    pnlUp: true,
-    deployed: "3d ago",
-    status: "live",
-  },
-  {
-    id: "3987",
-    name: "Liquidity Depth Scanner",
-    strategy: "Concentrated LP rebalancing bot",
-    protocols: ["Agni", "Merchant Moe"],
-    tvl: "$456K",
-    pnl: "-2.3%",
-    pnlUp: false,
-    deployed: "5d ago",
-    status: "paused",
-  },
-  {
-    id: "2156",
-    name: "Cross-Protocol Harvest",
-    strategy: "Auto-compound across 4 yield sources",
-    protocols: ["mETH", "USDY", "Agni"],
-    tvl: "$1.8M",
-    pnl: "+31.5%",
-    pnlUp: true,
-    deployed: "1w ago",
-    status: "live",
-  },
-  {
-    id: "1093",
-    name: "Volatility Arbitrage V2",
-    strategy: "IV mispricing capture on Mantle",
-    protocols: ["Merchant Moe"],
-    tvl: "$678K",
-    pnl: "+9.8%",
-    pnlUp: true,
-    deployed: "2w ago",
-    status: "live",
-  },
-];
 
 const STATUS_COLORS: Record<string, string> = {
   live: "bg-[#4ade80]",
   paused: "bg-[#fbbf24]",
-  draft: "bg-muted",
+  failed: "bg-[#f87171]",
 };
 
+function timeAgo(dateStr: string): string {
+  const ms = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 export function AgentGrid() {
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAgents = async () => {
+    try {
+      const res = await fetch("/api/agents");
+      const data = await res.json();
+      setAgents(data.agents || []);
+    } catch {
+      // no data yet
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAgents();
+    const interval = setInterval(fetchAgents, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white border border-border p-6 animate-pulse">
+            <div className="h-5 bg-surface-alt rounded w-3/4 mb-4" />
+            <div className="h-4 bg-surface-alt rounded w-full mb-3" />
+            <div className="h-4 bg-surface-alt rounded w-2/3 mb-4" />
+            <div className="flex gap-2 mb-4">
+              <div className="h-5 bg-surface-alt rounded w-16" />
+              <div className="h-5 bg-surface-alt rounded w-16" />
+            </div>
+            <div className="h-8 bg-surface-alt rounded w-full" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (agents.length === 0) {
+    return (
+      <motion.div
+        className="bg-white border border-dashed border-muted p-16 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="text-4xl mb-4 text-muted">⊕</div>
+        <h3 className="font-display font-semibold text-xl mb-2">No agents deployed</h3>
+        <p className="font-mono text-[0.58rem] text-ink-soft tracking-[0.06em]">
+          Click &ldquo;Deploy Agent&rdquo; to create your first AI-generated smart
+          contract on Mantle.
+        </p>
+      </motion.div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-      {MOCK_AGENTS.map((agent, i) => (
+      {agents.map((agent, i) => (
         <motion.div
           key={agent.id}
           className="bg-white border border-border p-6 hover:border-ink/15 transition-colors duration-300 cursor-pointer group"
@@ -101,11 +102,10 @@ export function AgentGrid() {
           transition={{ delay: 0.06 * i, duration: 0.5, ease: "easeOut" }}
           whileHover={{ y: -2 }}
         >
-          {/* Header */}
           <div className="flex items-start justify-between mb-5">
             <div>
               <h3 className="font-display font-semibold text-lg leading-tight mb-1 group-hover:text-accent transition-colors">
-                {agent.name}
+                {agent.name || "Strategy Contract"}
               </h3>
               <div className="font-mono text-[0.5rem] tracking-[0.2em] uppercase text-ink-soft">
                 ERC-8004 #{agent.id}
@@ -119,24 +119,23 @@ export function AgentGrid() {
             </div>
           </div>
 
-          {/* Strategy */}
-          <p className="font-mono text-[0.58rem] leading-[1.7] text-ink-soft mb-4 tracking-[0.04em]">
+          <p className="font-mono text-[0.58rem] leading-[1.7] text-ink-soft mb-4 tracking-[0.04em] line-clamp-2">
             {agent.strategy}
           </p>
 
-          {/* Protocols */}
-          <div className="flex flex-wrap gap-1.5 mb-5">
-            {agent.protocols.map((p) => (
-              <span
-                key={p}
-                className="font-mono text-[0.48rem] tracking-[0.1em] px-2 py-0.5 bg-surface-alt border border-border text-ink-soft"
-              >
-                {p}
-              </span>
-            ))}
-          </div>
+          {agent.protocols.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-5">
+              {agent.protocols.map((p) => (
+                <span
+                  key={p}
+                  className="font-mono text-[0.48rem] tracking-[0.1em] px-2 py-0.5 bg-surface-alt border border-border text-ink-soft"
+                >
+                  {p}
+                </span>
+              ))}
+            </div>
+          )}
 
-          {/* Metrics */}
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
             <div>
               <div className="font-mono text-[0.7rem] font-medium">{agent.tvl}</div>
@@ -145,26 +144,26 @@ export function AgentGrid() {
               </div>
             </div>
             <div>
-              <div
-                className={`font-mono text-[0.7rem] font-medium ${
-                  agent.pnlUp ? "text-[#4ade80]" : "text-[#f87171]"
-                }`}
-              >
+              <div className={`font-mono text-[0.7rem] font-medium ${parseFloat(agent.pnl) >= 0 ? "text-[#4ade80]" : "text-[#f87171]"}`}>
                 {agent.pnl}
               </div>
               <div className="font-mono text-[0.45rem] tracking-[0.15em] uppercase text-ink-soft">
-                PnL (30d)
+                PnL
               </div>
             </div>
           </div>
 
-          {/* Footer */}
           <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
-            <span className="font-mono text-[0.48rem] tracking-[0.1em] text-muted">
-              {agent.deployed}
-            </span>
-            <span className="font-mono text-[0.48rem] tracking-[0.12em] text-ink-soft opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-accent">
-              View →
+            <a
+              href={`https://explorer.sepolia.mantle.xyz/address/${agent.contractAddress}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-[0.46rem] tracking-[0.1em] text-muted hover:text-ink transition-colors truncate max-w-[160px]"
+            >
+              {agent.contractAddress.slice(0, 10)}...
+            </a>
+            <span className="font-mono text-[0.48rem] tracking-[0.1em] text-ink-soft opacity-0 group-hover:opacity-100 transition-opacity">
+              {timeAgo(agent.createdAt)}
             </span>
           </div>
         </motion.div>
