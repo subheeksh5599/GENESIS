@@ -5,7 +5,6 @@ import { StatsBar } from "@/app/components/dashboard/stats-bar";
 import { AgentGrid } from "@/app/components/dashboard/agent-grid";
 import { ActivityFeed } from "@/app/components/dashboard/activity-feed";
 import { DeployModal } from "@/app/components/dashboard/deploy-modal";
-import { WalletPanel } from "@/app/components/dashboard/wallet-panel";
 
 export default function DashboardPage() {
   const [deployOpen, setDeployOpen] = useState(false);
@@ -48,7 +47,6 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="xl:col-span-1 space-y-5">
-            <WalletPanel />
             <ActivityFeed />
           </div>
         </div>
