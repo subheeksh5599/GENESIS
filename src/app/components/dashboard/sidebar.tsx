@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { label: "Deploy", icon: "⊕", href: "/dashboard/deploy" },
   { label: "Strategies", icon: "⊡", href: "/dashboard/strategies" },
   { label: "Analytics", icon: "◈", href: "/dashboard/analytics" },
+  { label: "Wallet", icon: "◇", href: "/dashboard/wallet" },
   { label: "History", icon: "↗", href: "/dashboard/history" },
 ];
 
