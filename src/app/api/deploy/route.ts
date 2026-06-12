@@ -33,21 +33,12 @@ export async function POST(request: Request) {
     } catch { /* ignore */ }
 
     // ── STAGE 1: GENERATE ──
-    let source = await generateSolidity(intent, true);
-
-    // Post-process: fix missing 'bool' in tuple declarations (AI sometimes drops it)
-    source = source.replace(/\(\s*ok\s*,/g, "(bool ok,");
-    // Post-process: strip any interface declarations
-    source = source.replace(/interface\s+\w+\s*\{[^}]*\}/g, "");
-    // Post-process: strip any import statements
-    source = source.replace(/^import\s+.*$/gm, "");
-    // Post-process: collapse multiple blank lines
-    source = source.replace(/\n{3,}/g, "\n\n");
+    const source = await generateSolidity(intent, true);
 
     // Validate: reject contracts with placeholder addresses
     if (source.match(/0x\.{2,}|0x[0]{10,}/)) {
       return NextResponse.json({
-        error: "Generated contract contains placeholder addresses (0x...). The AI hallucinated invalid data. Please rephrase your intent or try again — the model sometimes inserts dummy values.",
+        error: "Generated contract contains placeholder addresses. Please rephrase your intent.",
         stage: "generate",
         source,
       }, { status: 400 });
