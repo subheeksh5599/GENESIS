@@ -52,7 +52,8 @@ ${proxy}
 
 REQUIREMENTS:
 1. Solidity ^0.8.20, MIT license
-2. NatSpec on every function with @notice, @param, @return
+2. DO NOT use any imports — write self-contained flat contracts. No import statements. Implement onlyOwner, SafeERC20, and reentrancy guards inline.
+3. NatSpec on every function with @notice, @param, @return
 3. Include header comment:
    /// @custom:deployer Genesis Engine — Mantle Network
 4. Events for every state change (indexed params where possible)
@@ -125,35 +126,38 @@ pragma solidity ^0.8.20;
   if (upgradeable) {
     return `${header}
 
-import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-
 /**
  * @title GenesisStrategy
  * @notice Synthesized upgradeable protocol for Mantle Network
- * @dev ${desc.slice(0, 80).replace(/\n/g, " ")}...
+ * @dev Self-contained — no external dependencies
  */
-contract GenesisStrategy is UUPSUpgradeable, ReentrancyGuardUpgradeable, OwnableUpgradeable {
-    using SafeERC20Upgradeable for IERC20Upgradeable;
+contract GenesisStrategy {
+    address public owner;
+    bool private _locked;
+
+    modifier onlyOwner() { require(msg.sender == owner, "Not owner"); _; }
+    modifier nonReentrant() { require(!_locked, "Reentrant"); _locked = true; _; _locked = false; }
 
     event ProtocolExecuted(uint256 timestamp, uint256 totalValue);
     event RewardsClaimed(uint256 amount);
     event EmergencyWithdraw(address indexed token, uint256 amount);
+    event OwnershipTransferred(address indexed previous, address indexed next);
 
     uint256 public totalValueLocked;
+    address public implementation;
 
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() { _disableInitializers(); }
+    constructor() { owner = msg.sender; }
 
-    function initialize(address _owner) public initializer {
-        __UUPSUpgradeable_init();
-        __ReentrancyGuard_init();
-        __Ownable_init(_owner);
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "Zero address");
+        emit OwnershipTransferred(owner, newOwner);
+        owner = newOwner;
     }
 
-    function _authorizeUpgrade(address) internal override onlyOwner {}
+    function upgradeTo(address newImpl) external onlyOwner {
+        require(newImpl != address(0), "Zero address");
+        implementation = newImpl;
+    }
 
     function executeProtocol() external nonReentrant onlyOwner {
         uint256 bal = address(this).balance;
@@ -167,9 +171,12 @@ contract GenesisStrategy is UUPSUpgradeable, ReentrancyGuardUpgradeable, Ownable
     }
 
     function emergencyWithdraw(address token) external onlyOwner {
-        uint256 bal = IERC20Upgradeable(token).balanceOf(address(this));
+        (bool ok, bytes memory data) = token.call(abi.encodeWithSignature("balanceOf(address)", address(this)));
+        require(ok, "Balance check failed");
+        uint256 bal = abi.decode(data, (uint256));
         require(bal > 0, "No balance");
-        IERC20Upgradeable(token).safeTransfer(owner(), bal);
+        (ok,) = token.call(abi.encodeWithSignature("transfer(address,uint256)", owner, bal));
+        require(ok, "Transfer failed");
         emit EmergencyWithdraw(token, bal);
     }
 
@@ -179,17 +186,17 @@ contract GenesisStrategy is UUPSUpgradeable, ReentrancyGuardUpgradeable, Ownable
 
   return `${header}
 
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-
 /**
  * @title GenesisStrategy
  * @notice Synthesized protocol for Mantle Network
- * @dev ${desc.slice(0, 80).replace(/\n/g, " ")}...
+ * @dev Self-contained — no external dependencies
  */
-contract GenesisStrategy is ReentrancyGuard, Ownable {
-    using SafeERC20 for IERC20;
+contract GenesisStrategy {
+    address public owner;
+    bool private _locked;
+
+    modifier onlyOwner() { require(msg.sender == owner, "Not owner"); _; }
+    modifier nonReentrant() { require(!_locked, "Reentrant"); _locked = true; _; _locked = false; }
 
     event ProtocolExecuted(uint256 timestamp, uint256 totalValue);
     event RewardsClaimed(uint256 amount);
@@ -197,7 +204,7 @@ contract GenesisStrategy is ReentrancyGuard, Ownable {
 
     uint256 public totalValueLocked;
 
-    constructor() Ownable(msg.sender) {}
+    constructor() { owner = msg.sender; }
 
     function executeProtocol() external nonReentrant onlyOwner {
         uint256 bal = address(this).balance;
@@ -211,9 +218,12 @@ contract GenesisStrategy is ReentrancyGuard, Ownable {
     }
 
     function emergencyWithdraw(address token) external onlyOwner {
-        uint256 bal = IERC20(token).balanceOf(address(this));
+        (bool ok, bytes memory data) = token.call(abi.encodeWithSignature("balanceOf(address)", address(this)));
+        require(ok, "Balance check failed");
+        uint256 bal = abi.decode(data, (uint256));
         require(bal > 0, "No balance");
-        IERC20(token).safeTransfer(owner(), bal);
+        (ok,) = token.call(abi.encodeWithSignature("transfer(address,uint256)", owner, bal));
+        require(ok, "Transfer failed");
         emit EmergencyWithdraw(token, bal);
     }
 

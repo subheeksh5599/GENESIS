@@ -5,8 +5,6 @@ import { saveAgent, getAgentCount } from "@/lib/store";
 import { verifyContract } from "@/lib/verifier";
 import { reviewContract, type SecurityReport } from "@/lib/security-review";
 import solc from "solc";
-import fs from "fs";
-import path from "path";
 
 const FAUCET_URL = "https://faucet.testnet.mantle.xyz";
 const COMPILER_VERSION = "v0.8.35+commit.47b9dedd";
@@ -69,24 +67,7 @@ export async function POST(request: Request) {
       },
     };
 
-    // Resolve imports from node_modules
-    function findImports(importPath: string): { contents: string } | { error: string } {
-      const ozPaths = [
-        path.join(process.cwd(), "node_modules", importPath),
-        path.join(process.cwd(), "node_modules", "@openzeppelin", "contracts", importPath.replace("@openzeppelin/contracts/", "")),
-        path.join(process.cwd(), "node_modules", "@openzeppelin", "contracts-upgradeable", importPath.replace("@openzeppelin/contracts-upgradeable/", "")),
-      ];
-
-      for (const p of ozPaths) {
-        if (fs.existsSync(p)) {
-          return { contents: fs.readFileSync(p, "utf-8") };
-        }
-      }
-
-      return { error: `Import not found: ${importPath}` };
-    }
-
-    const compiled = JSON.parse(solc.compile(JSON.stringify(compilerInput), findImports));
+    const compiled = JSON.parse(solc.compile(JSON.stringify(compilerInput)));
 
     if (compiled.errors?.some((e: { severity: string }) => e.severity === "error")) {
       const errs = compiled.errors
