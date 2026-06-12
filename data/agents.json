@@ -1,0 +1,243 @@
+[
+  {
+    "id": "1001",
+    "name": "Allocate 60% to mETH, compound rewards, ",
+    "strategy": "Allocate 60% to mETH, compound rewards, rebalance weekly",
+    "protocols": [
+      "mETH"
+    ],
+    "contractAddress": "0x84b4857275bce2b0cf3866a4aea15784da80cedf",
+    "deployerAddress": "0x16167F862a59A9BEd3c57AB2c75aA1D23EbC74F9",
+    "txHash": "0xaa0869fa40ff4a476f3018c78d347132baa5f606e14959a57709f89bc1148333",
+    "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "rewards",
+            "type": "uint256"
+          }
+        ],
+        "name": "Compounded",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "EmergencyWithdrawal",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "mETH",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "agniRouter",
+            "type": "address"
+          }
+        ],
+        "name": "Initialized",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "Invested",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "mETHBalance",
+            "type": "uint256"
+          }
+        ],
+        "name": "Rebalanced",
+        "type": "event"
+      },
+      {
+        "inputs": [],
+        "name": "ALLOCATION_PERCENT",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "REBALANCE_INTERVAL",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "compound",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address[]",
+            "name": "tokens",
+            "type": "address[]"
+          }
+        ],
+        "name": "emergencyWithdrawal",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_owner",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_mETH",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_agniRouter",
+            "type": "address"
+          }
+        ],
+        "name": "initialize",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "invest",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "lastRebalance",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "minAmountOut",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "rebalance",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "name": "tokenBalances",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "stateMutability": "payable",
+        "type": "receive"
+      }
+    ],
+    "source": "pragma solidity ^0.8.20;\n\ncontract mETHCompoundRebalanceStrategy {\n    // Events\n    event Initialized(address indexed owner, address indexed mETH, address indexed agniRouter);\n    event Invested(uint256 amount);\n    event Compounded(uint256 rewards);\n    event Rebalanced(uint256 mETHBalance);\n    event EmergencyWithdrawal(address indexed token, uint256 amount);\n\n    // State Variables\n    address private owner;\n    address private mETH;\n    address private agniRouter;\n    uint256 public minAmountOut = 1e12; // slippage protection\n    uint256 public lastRebalance;\n    uint256 public constant REBALANCE_INTERVAL = 7 days;\n    uint256 public constant ALLOCATION_PERCENT = 60; // 60% allocation to mETH\n\n    // Mapping of token to balance\n    mapping(address => uint256) public tokenBalances;\n\n    // Modifiers\n    modifier onlyOwner() {\n        require(msg.sender == owner, \"Only owner can call this function\");\n        _;\n    }\n\n    modifier nonReentrant() {\n        require(tokenBalances[address(this)] == 0, \"ReentrancyGuard: reentrant call\");\n        tokenBalances[address(this)] = 1;\n        _;\n        tokenBalances[address(this)] = 0;\n    }\n\n    // UUPS Upgradeable Functions\n    function initialize(address _owner, address _mETH, address _agniRouter) public {\n        require(owner == address(0), \"Already initialized\");\n        owner = _owner;\n        mETH = _mETH;\n        agniRouter = _agniRouter;\n        lastRebalance = block.timestamp;\n        emit Initialized(_owner, _mETH, _agniRouter);\n    }\n\n    function _authorizeUpgrade(address newImplementation) internal view onlyOwner {}\n\n    // SafeERC20 Functions\n    function safeTransfer(address token, address to, uint256 amount) internal {\n        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0xa9059cbb, to, amount));\n        require(success && (data.length == 0 || abi.decode(data, (bool))), \"SafeERC20: low-level call failed\");\n    }\n\n    function safeApprove(address token, address spender, uint256 amount) internal {\n        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x095ea7b3, spender, amount));\n        require(success && (data.length == 0 || abi.decode(data, (bool))), \"SafeERC20: low-level call failed\");\n    }\n\n    // Strategy Functions\n    function invest(uint256 amount) external onlyOwner nonReentrant {\n        // Assume ETH is sent to this contract\n        uint256 mETHAmount = amount * ALLOCATION_PERCENT / 100;\n        safeApprove(address(this), mETH, mETHAmount);\n        (bool success, ) = mETH.call(abi.encodeWithSelector(0x1249c58b, mETHAmount));\n        require(success, \"mETH deposit failed\");\n        emit Invested(mETHAmount);\n    }\n\n    function compound() external onlyOwner nonReentrant {\n        // Compound mETH rewards\n        uint256 rewards = getRewards();\n        if (rewards > 0) {\n            // Swap rewards for mETH on Agni Finance\n            address[] memory path = new address[](2);\n            path[0] = address(this); // Assuming reward token is ETH\n            path[1] = mETH;\n            safeApprove(address(this), agniRouter, rewards);\n            (bool success, ) = agniRouter.call(abi.encodeWithSelector(0x7ff36ab5, path, rewards, minAmountOut, block.timestamp));\n            require(success, \"Agni swap failed\");\n            emit Compounded(rewards);\n        }\n    }\n\n    function rebalance() external onlyOwner nonReentrant {\n        require(block.timestamp - lastRebalance >= REBALANCE_INTERVAL, \"Rebalance interval not met\");\n        lastRebalance = block.timestamp;\n        uint256 mETHBalance = getMETBalance();\n        emit Rebalanced(mETHBalance);\n    }\n\n    function getRewards() internal view returns (uint256) {\n        // Assuming mETH rewards are in ETH\n        return address(this).balance;\n    }\n\n    function getMETBalance() internal view returns (uint256) {\n        // Assuming mETH balance is stored in the contract\n        return tokenBalances[mETH];\n    }\n\n    // Emergency Withdrawal\n    function emergencyWithdrawal(address[] memory tokens) external onlyOwner nonReentrant {\n        for (uint256 i = 0; i < tokens.length; i++) {\n            uint256 balance = tokenBalances[tokens[i]];\n            if (balance > 0) {\n                safeTransfer(tokens[i], owner, balance);\n                emit EmergencyWithdrawal(tokens[i], balance);\n            }\n        }\n    }\n\n    // Fallback function to receive ETH\n    receive() external payable {}\n}",
+    "verified": false,
+    "createdAt": "2026-06-12T07:08:36.600Z",
+    "deployedAt": 1781248116600,
+    "status": "live",
+    "pnl": "0.00%",
+    "tvl": "$0"
+  }
+]

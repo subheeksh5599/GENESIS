@@ -52,8 +52,19 @@ ${proxy}
 
 REQUIREMENTS:
 1. Solidity ^0.8.20, MIT license
-2. DO NOT use any imports — write self-contained flat contracts. No import statements. Implement onlyOwner, SafeERC20, and reentrancy guards inline.
-3. NatSpec on every function with @notice, @param, @return
+2. DO NOT use any imports — write self-contained flat contracts.
+3. DO NOT declare interfaces anywhere. Use address.call() for all external token interactions (balanceOf, transfer, approve). Use the raw call pattern shown below for every token interaction.
+4. Implement onlyOwner modifier inline. Implement a simple reentrancy lock inline.
+5. All external addresses must be constructor/initialize parameters — NEVER hardcode them.
+6. NEVER use placeholder addresses like 0x... or 0x000...
+7. NatSpec on every function with @notice, @param, @return
+8. Events for every state change
+9. Emergency withdrawal function
+10. Return ONLY the Solidity code — no explanation, no markdown, no backticks
+
+RAW CALL PATTERN FOR TOKEN INTERACTIONS:
+- Read balance: (bool ok, bytes memory data) = token.call(abi.encodeWithSignature("balanceOf(address)", addr)); uint256 bal = abi.decode(data, (uint256));
+- Transfer: (bool ok,) = token.call(abi.encodeWithSignature("transfer(address,uint256)", to, amount)); require(ok, "Transfer failed");
 3. Include header comment:
    /// @custom:deployer Genesis Engine — Mantle Network
 4. Events for every state change (indexed params where possible)

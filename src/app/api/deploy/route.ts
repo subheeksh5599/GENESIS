@@ -33,7 +33,14 @@ export async function POST(request: Request) {
     } catch { /* ignore */ }
 
     // ── STAGE 1: GENERATE ──
-    const source = await generateSolidity(intent, true);
+    let source = await generateSolidity(intent, true);
+
+    // Post-process: strip any interface declarations (they belong at file level)
+    source = source.replace(/interface\s+\w+\s*\{[^}]*\}/g, "");
+    // Post-process: strip any import statements (shouldn't exist but be safe)
+    source = source.replace(/^import\s+.*$/gm, "");
+    // Post-process: collapse multiple blank lines
+    source = source.replace(/\n{3,}/g, "\n\n");
 
     // Validate: reject contracts with placeholder addresses
     if (source.match(/0x\.{2,}|0x[0]{10,}/)) {
