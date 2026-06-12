@@ -140,7 +140,9 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
         return;
       }
 
-      // Success — all stages done
+      // All stages done
+      updateStage("generate", "done");
+      updateStage("review", "done");
       updateStage("compile", "done");
       updateStage("gas", "done");
       updateStage("deploy", "done");
@@ -150,11 +152,6 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
         setSecurityReport(data.pipeline.securityReport || null);
         setGasEstimate(data.pipeline.gasEstimate || null);
         setPipelineSource(data.pipeline.source || "");
-      }
-
-      // Mark verify stage
-      if (data.verification) {
-        updateStage("verify", "done");
       }
 
       setResult(data.agent);

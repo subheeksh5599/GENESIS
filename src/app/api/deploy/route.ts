@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { generateSolidity } from "@/lib/ai-gen";
 import { deployContract, getBalance, estimateGas } from "@/lib/deployer";
 import { saveAgent, getAgentCount } from "@/lib/store";
-import { getVerificationInfo } from "@/lib/verifier";
+import { verifyContract } from "@/lib/verifier";
 import { reviewContract, type SecurityReport } from "@/lib/security-review";
 import solc from "solc";
 
@@ -124,13 +124,20 @@ export async function POST(request: Request) {
       tvl: "$0",
     });
 
-    const verification = getVerificationInfo(contractAddress, source, contractName, COMPILER_VERSION, 200);
+    // Fire-and-forget verification — explorer API can be flaky
+    verifyContract(contractAddress, source, contractName, COMPILER_VERSION, 200)
+      .then(async (result) => {
+        if (result.verified) {
+          const { updateAgent } = await import("@/lib/store");
+          updateAgent(agentId, { verified: true });
+        }
+      })
+      .catch(() => {});
 
     return NextResponse.json({
       success: true,
       agent: { id: agentId, contractAddress, txHash, verified: false },
       pipeline: { source, securityReport, gasEstimate, balance, abi },
-      verification,
     });
   } catch (err: unknown) {
     return NextResponse.json({
