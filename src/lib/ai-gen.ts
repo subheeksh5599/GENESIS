@@ -59,7 +59,8 @@ REQUIREMENTS:
 5. Emergency withdrawal function (onlyOwner, transfers all tokens)
 6. Slippage protection with configurable minAmountOut
 7. Gas optimized: avoid loops over unbounded arrays
-8. Return ONLY the Solidity code — no explanation, no markdown, no backticks`;
+8. NEVER use placeholder addresses like 0x... or 0x000... — always use constructor or initialize parameters. Every external address must be configurable via constructor/initialize, not hardcoded.
+9. Return ONLY the Solidity code — no explanation, no markdown, no backticks`;
 }
 
 export async function generateSolidity(

@@ -35,6 +35,15 @@ export async function POST(request: Request) {
     // ── STAGE 1: GENERATE ──
     const source = await generateSolidity(intent, true);
 
+    // Validate: reject contracts with placeholder addresses
+    if (source.match(/0x\.{2,}|0x[0]{10,}/)) {
+      return NextResponse.json({
+        error: "Generated contract contains placeholder addresses (0x...). The AI hallucinated invalid data. Please rephrase your intent or try again — the model sometimes inserts dummy values.",
+        stage: "generate",
+        source,
+      }, { status: 400 });
+    }
+
     // ── STAGE 2: SECURITY REVIEW ──
     const securityReport: SecurityReport = await reviewContract(source);
 

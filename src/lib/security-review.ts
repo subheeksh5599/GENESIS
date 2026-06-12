@@ -47,6 +47,8 @@ MEDIUM (flag, allow with warning):
 INFORMATIONAL:
 19. NATSPEC COVERAGE — Functions missing @notice, @param, @return documentation.
 20. LICENSE DECLARATION — Missing or incorrect SPDX license identifier.
+21. PLACEHOLDER ADDRESSES — Using 0x... or 0x000... as placeholder addresses instead of constructor parameters. AUTO-REJECT.
+22. FLOATING PRAGMA — Using caret pragma (^0.8.x) is intentional for compiler compatibility. DO NOT flag as a finding — this is expected behavior for Genesis.
 
 SCORING:
 - 0 critical + 0 high = LOW RISK (score 85+)
@@ -220,7 +222,15 @@ function offlineReview(source: string): SecurityReport {
   }
 
   if (source.includes("pragma solidity ^0.8") && source.includes("pragma solidity ^0.8")) {
-    // Using caret pragma intentionally for compiler compatibility — not a finding
+    if (source.includes("0x...") || (source.match(/0x[0]{6,}/) && !source.includes("0x0000000000000000000000000000000000000000"))) {
+    findings.push({
+      severity: "critical", category: "PLACEHOLDER ADDRESSES", line: 0, confidence: 0.99,
+      description: "Contract contains placeholder or zero addresses that are not proper address(0) checks.",
+      recommendation: "Pass all external addresses through constructor or initialize() parameters.",
+    });
+  }
+
+  // Floating pragma is intentional — skip
   }
 
   const criticals = findings.filter((f) => f.severity === "critical").length;
