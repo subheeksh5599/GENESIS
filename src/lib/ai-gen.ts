@@ -51,7 +51,7 @@ Mantle protocols:
 ${proxy}
 
 REQUIREMENTS:
-1. Solidity 0.8.26, MIT license
+1. Solidity ^0.8.20, MIT license
 2. NatSpec on every function with @notice, @param, @return
 3. Include header comment:
    /// @custom:deployer Genesis Engine — Mantle Network
@@ -118,7 +118,7 @@ function findMatchingClose(code: string): number {
 
 function generateTemplateContract(desc: string, upgradeable: boolean): string {
   const header = `// SPDX-License-Identifier: MIT
-pragma solidity 0.8.26;
+pragma solidity ^0.8.20;
 /// @custom:deployer Genesis Engine — Mantle Network`;
 
   if (upgradeable) {
@@ -131,13 +131,13 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
  * @title GenesisStrategy
- * @notice Auto-generated upgradeable DeFi strategy for Mantle
+ * @notice Synthesized upgradeable protocol for Mantle Network
  * @dev ${desc.slice(0, 80).replace(/\n/g, " ")}...
  */
 contract GenesisStrategy is UUPSUpgradeable, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    event StrategyExecuted(uint256 timestamp, uint256 totalValue);
+    event ProtocolExecuted(uint256 timestamp, uint256 totalValue);
     event RewardsClaimed(uint256 amount);
     event EmergencyWithdraw(address indexed token, uint256 amount);
 
@@ -154,11 +154,11 @@ contract GenesisStrategy is UUPSUpgradeable, ReentrancyGuardUpgradeable, Ownable
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
-    function executeStrategy() external nonReentrant onlyOwner {
+    function executeProtocol() external nonReentrant onlyOwner {
         uint256 bal = address(this).balance;
         require(bal > 0, "No funds");
         totalValueLocked = bal;
-        emit StrategyExecuted(block.timestamp, bal);
+        emit ProtocolExecuted(block.timestamp, bal);
     }
 
     function claimRewards() external nonReentrant {
@@ -182,10 +182,15 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+/**
+ * @title GenesisStrategy
+ * @notice Synthesized protocol for Mantle Network
+ * @dev ${desc.slice(0, 80).replace(/\n/g, " ")}...
+ */
 contract GenesisStrategy is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
-    event StrategyExecuted(uint256 timestamp, uint256 totalValue);
+    event ProtocolExecuted(uint256 timestamp, uint256 totalValue);
     event RewardsClaimed(uint256 amount);
     event EmergencyWithdraw(address indexed token, uint256 amount);
 
@@ -193,11 +198,11 @@ contract GenesisStrategy is ReentrancyGuard, Ownable {
 
     constructor() Ownable(msg.sender) {}
 
-    function executeStrategy() external nonReentrant onlyOwner {
+    function executeProtocol() external nonReentrant onlyOwner {
         uint256 bal = address(this).balance;
         require(bal > 0, "No funds");
         totalValueLocked = bal;
-        emit StrategyExecuted(block.timestamp, bal);
+        emit ProtocolExecuted(block.timestamp, bal);
     }
 
     function claimRewards() external nonReentrant {

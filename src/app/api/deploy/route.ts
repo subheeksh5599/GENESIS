@@ -7,7 +7,7 @@ import { reviewContract, type SecurityReport } from "@/lib/security-review";
 import solc from "solc";
 
 const FAUCET_URL = "https://faucet.testnet.mantle.xyz";
-const COMPILER_VERSION = "v0.8.26+commit.8a97fa7a";
+const COMPILER_VERSION = "v0.8.35+commit.47b9dedd";
 
 export async function POST(request: Request) {
   try {
