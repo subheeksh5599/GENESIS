@@ -25,7 +25,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No wallet connected." }, { status: 400 });
     }
 
-    // Derive deployer address
     let deployerAddress = "";
     try {
       const { privateKeyToAddress } = await import("viem/accounts");
@@ -35,12 +34,10 @@ export async function POST(request: Request) {
     // ── STAGE 1: GENERATE ──
     const source = await generateSolidity(intent, true);
 
-    // Validate: reject contracts with placeholder addresses
     if (source.match(/0x\.{2,}|0x[0]{10,}/)) {
       return NextResponse.json({
         error: "Generated contract contains placeholder addresses. Please rephrase your intent.",
-        stage: "generate",
-        source,
+        stage: "generate", source,
       }, { status: 400 });
     }
 
@@ -50,9 +47,7 @@ export async function POST(request: Request) {
     if (securityReport.status === "rejected") {
       return NextResponse.json({
         error: "Security review rejected deployment.",
-        stage: "review",
-        source,
-        securityReport,
+        stage: "review", source, securityReport,
       }, { status: 400 });
     }
 
@@ -76,9 +71,7 @@ export async function POST(request: Request) {
         .join("\n");
       return NextResponse.json({
         error: `Compilation failed:\n${errs}`,
-        stage: "compile",
-        source,
-        securityReport,
+        stage: "compile", source, securityReport,
       }, { status: 400 });
     }
 
@@ -88,34 +81,49 @@ export async function POST(request: Request) {
     const bytecode = ("0x" + contract.evm.bytecode.object) as `0x${string}`;
     const abi = contract.abi;
 
-    // ── STAGE 4: GAS ESTIMATE ──
-    let gasEstimate;
+    // ── STAGE 4: EXTRACT CONSTRUCTOR ARGS ──
+    const constructorAbi = abi.find((item: { type: string }) => item.type === "constructor");
+    const constructorArgs: unknown[] = [];
+    if (constructorAbi?.inputs) {
+      for (const input of constructorAbi.inputs) {
+        if (input.type === "address") {
+          constructorArgs.push("0x0000000000000000000000000000000000000000");
+        } else if (input.type.includes("uint")) {
+          constructorArgs.push(0);
+        } else if (input.type === "bool") {
+          constructorArgs.push(false);
+        } else if (input.type === "string") {
+          constructorArgs.push("");
+        } else {
+          constructorArgs.push(0);
+        }
+      }
+    }
+
+    // ── STAGE 5: GAS ESTIMATE ──
+    let gasEstimate: { gas: string; gasPrice: string; costMNT: string; costUSD: string };
     try {
-      gasEstimate = await estimateGas(bytecode);
+      gasEstimate = await estimateGas(bytecode, constructorArgs);
     } catch {
       gasEstimate = { gas: "~250,000", gasPrice: "0.02", costMNT: "0.005", costUSD: "~$0.004" };
     }
 
-    // ── STAGE 5: CHECK BALANCE ──
+    // ── STAGE 6: CHECK BALANCE ──
     let balance = "0";
     try { balance = await getBalance(deployerAddress); } catch { /* ignore */ }
 
     if (parseFloat(balance) < parseFloat(gasEstimate.costMNT)) {
       return NextResponse.json({
         error: `Insufficient MNT for gas. Need ${gasEstimate.costMNT} MNT, have ${balance} MNT.`,
-        stage: "preflight",
-        source,
-        securityReport,
-        gasEstimate,
-        balance,
+        stage: "preflight", source, securityReport, gasEstimate, balance,
         faucetUrl: FAUCET_URL,
       }, { status: 402 });
     }
 
-    // ── STAGE 6: DEPLOY ──
-    const { address: contractAddress, txHash } = await deployContract(bytecode, privateKey);
+    // ── STAGE 7: DEPLOY ──
+    const { address: contractAddress, txHash } = await deployContract(bytecode, privateKey, constructorArgs);
 
-    // ── STAGE 7: SAVE + VERIFY ──
+    // ── STAGE 8: SAVE + VERIFY ──
     const agentId = String(1000 + getAgentCount() + 1);
     saveAgent({
       id: agentId,
@@ -135,7 +143,6 @@ export async function POST(request: Request) {
       tvl: "$0",
     });
 
-    // Verify on explorer (try both endpoints)
     const verifyResult = await verifyContract(contractAddress, source, contractName, COMPILER_VERSION, 200);
     if (verifyResult.verified) {
       const { updateAgent } = await import("@/lib/store");
@@ -145,13 +152,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       agent: { id: agentId, contractAddress, txHash, verified: verifyResult.verified },
-      pipeline: {
-        source,
-        securityReport,
-        gasEstimate,
-        balance,
-        abi,
-      },
+      pipeline: { source, securityReport, gasEstimate, balance, abi },
       verification: verifyResult,
     });
   } catch (err: unknown) {

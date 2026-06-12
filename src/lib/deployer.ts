@@ -17,22 +17,25 @@ export async function getBalance(address: string): Promise<string> {
   return (Number(balance) / 1e18).toFixed(6);
 }
 
-export async function estimateGas(bytecode: Hex): Promise<{
+export async function estimateGas(
+  bytecode: Hex,
+  args: unknown[] = [],
+): Promise<{
   gas: string;
   gasPrice: string;
   costMNT: string;
   costUSD: string;
 }> {
   try {
+    const { encodeDeployData: enc2 } = await import("viem");
+    const data = (enc2 as any)({ abi: [], bytecode, args });
     const gasPrice = await publicClient.getGasPrice();
-    const estimated = await publicClient.estimateGas({ data: bytecode });
+    const estimated = await publicClient.estimateGas({ data });
 
     const gasNum = Number(estimated);
     const priceNum = Number(gasPrice);
     const costWei = BigInt(gasNum) * gasPrice;
     const costMNT = Number(costWei) / 1e18;
-
-    // Rough USD estimate (MNT ~$0.80)
     const costUSD = costMNT * 0.80;
 
     return {
@@ -54,8 +57,13 @@ export async function estimateGas(bytecode: Hex): Promise<{
 export async function deployContract(
   bytecode: Hex,
   privateKey: string,
+  args: unknown[] = [],
 ): Promise<{ address: string; txHash: string }> {
   const account = getAccount(privateKey);
+
+  // Encode constructor args into the deployment data
+  const { encodeDeployData: enc } = await import("viem");
+  const data = (enc as any)({ abi: [], bytecode, args });
 
   const walletClient = createWalletClient({
     chain: mantleTestnet,
@@ -63,10 +71,11 @@ export async function deployContract(
     account,
   });
 
-  const hash = await walletClient.deployContract({
-    abi: [],
-    bytecode,
-    args: [],
+  // Send raw creation transaction
+  const hash = await walletClient.sendTransaction({
+    account,
+    data,
+    chain: mantleTestnet,
   });
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
