@@ -51,7 +51,7 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
   const [deploying, setDeploying] = useState(false);
   const [deployed, setDeployed] = useState(false);
   const [error, setError] = useState("");
-  const [result, setResult] = useState<{ id: string; contractAddress: string; txHash: string } | null>(null);
+  const [result, setResult] = useState<{ id: string; contractAddress: string; txHash: string; verified?: boolean } | null>(null);
   const [faucetInfo, setFaucetInfo] = useState<{ faucetUrl?: string; walletAddress?: string } | null>(null);
   const [gasConfirm, setGasConfirm] = useState(false);
 
@@ -150,6 +150,15 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
         setSecurityReport(data.pipeline.securityReport || null);
         setGasEstimate(data.pipeline.gasEstimate || null);
         setPipelineSource(data.pipeline.source || "");
+      }
+
+      // Mark verify stage based on result
+      if (data.verification) {
+        if (data.verification.verified) {
+          updateStage("verify", "done");
+        } else {
+          updateStage("verify", "error");
+        }
       }
 
       setResult(data.agent);
@@ -364,6 +373,12 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
                     <div className="bg-surface-alt border border-border p-4 mb-6 text-left space-y-2 font-mono text-[0.52rem] max-w-[500px] mx-auto">
                       <div className="flex justify-between"><span className="text-ink-soft">Contract</span><a href={`https://explorer.sepolia.mantle.xyz/address/${result.contractAddress}`} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline truncate max-w-[240px]">{result.contractAddress.slice(0,12)}...</a></div>
                       <div className="flex justify-between"><span className="text-ink-soft">Transaction</span><a href={`https://explorer.sepolia.mantle.xyz/tx/${result.txHash}`} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline truncate max-w-[240px]">{result.txHash.slice(0,12)}...</a></div>
+                      <div className="flex justify-between">
+                        <span className="text-ink-soft">Verification</span>
+                        <span className={result.verified ? "text-[#4ade80]" : "text-[#fbbf24]"}>
+                          {result.verified ? "Verified on Explorer" : "Pending — verify manually"}
+                        </span>
+                      </div>
                       {securityReport && (
                         <>
                           <div className="flex justify-between">

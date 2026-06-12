@@ -142,19 +142,16 @@ export async function POST(request: Request) {
       tvl: "$0",
     });
 
-    // Fire-and-forget verification
-    verifyContract(contractAddress, source, contractName, COMPILER_VERSION, 200)
-      .then(async (result) => {
-        if (result.verified) {
-          const { updateAgent } = await import("@/lib/store");
-          updateAgent(agentId, { verified: true });
-        }
-      })
-      .catch(() => {});
+    // Verify on explorer (try both endpoints)
+    const verifyResult = await verifyContract(contractAddress, source, contractName, COMPILER_VERSION, 200);
+    if (verifyResult.verified) {
+      const { updateAgent } = await import("@/lib/store");
+      updateAgent(agentId, { verified: true });
+    }
 
     return NextResponse.json({
       success: true,
-      agent: { id: agentId, contractAddress, txHash, verified: false },
+      agent: { id: agentId, contractAddress, txHash, verified: verifyResult.verified },
       pipeline: {
         source,
         securityReport,
@@ -162,6 +159,7 @@ export async function POST(request: Request) {
         balance,
         abi,
       },
+      verification: verifyResult,
     });
   } catch (err: unknown) {
     return NextResponse.json({
