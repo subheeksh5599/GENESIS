@@ -24,7 +24,7 @@ export function Sidebar() {
   const sidebarContent = (
     <>
       <div className="flex items-center gap-3 px-5 h-[72px] border-b border-white/[0.05] shrink-0">
-        <Link href="/dashboard" className="font-bold font-mono text-[0.7rem] tracking-[0.25em] uppercase text-white/70 hover:text-white transition-colors shrink-0">GEN</Link>
+        <Link href="/" className="font-bold font-mono text-[0.7rem] tracking-[0.25em] uppercase text-white/70 hover:text-white transition-colors shrink-0">GEN</Link>
         {!collapsed && (
           <span className="font-display italic text-sm tracking-[0.04em] text-white/50 whitespace-nowrap">Genesis</span>
         )}
@@ -65,7 +65,7 @@ export function Sidebar() {
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-full bg-accent/80 flex items-center justify-center text-[0.55rem] font-mono text-white">G</div>
             <div className="min-w-0">
-              <div className="font-mono text-[0.58rem] text-white/80 truncate">Genesis Engine</div>
+              <div className="font-mono text-[0.58rem] text-white/80 truncate cursor-pointer hover:text-white transition-colors" onClick={() => window.location.href = "/"}>Genesis Engine</div>
               <div className="font-mono text-[0.48rem] text-white/40 tracking-[0.1em] uppercase mt-0.5">Mantle L2</div>
             </div>
           </div>
