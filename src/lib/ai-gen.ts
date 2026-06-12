@@ -112,7 +112,7 @@ contract ${safeName || "GenesisVault"} {
     uint256 public lastRebalance;
 
     /// @notice Primary token this strategy operates on
-    address public immutable primaryToken;
+    address public primaryToken;
 
     /// @notice Allocation percentage in basis points (6000 = 60%)
     uint256 public allocationBps;
@@ -142,9 +142,11 @@ contract ${safeName || "GenesisVault"} {
         _locked = false;
     }
 
+    /// @notice Initialize the strategy with parameters
     /// @param _primaryToken Address of the main token for this strategy
     /// @param _allocationBps Initial allocation in basis points (e.g. 6000 = 60%)
-    constructor(address _primaryToken, uint256 _allocationBps) {
+    function initialize(address _primaryToken, uint256 _allocationBps) external {
+        require(owner == address(0), "Already initialized");
         owner = msg.sender;
         primaryToken = _primaryToken;
         allocationBps = _allocationBps;

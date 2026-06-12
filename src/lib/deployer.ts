@@ -17,53 +17,31 @@ export async function getBalance(address: string): Promise<string> {
   return (Number(balance) / 1e18).toFixed(6);
 }
 
-export async function estimateGas(
-  bytecode: Hex,
-  args: unknown[] = [],
-): Promise<{
-  gas: string;
-  gasPrice: string;
-  costMNT: string;
-  costUSD: string;
+export async function estimateGas(bytecode: Hex): Promise<{
+  gas: string; gasPrice: string; costMNT: string; costUSD: string;
 }> {
   try {
-    const { encodeDeployData: enc2 } = await import("viem");
-    const data = (enc2 as any)({ abi: [], bytecode, args });
     const gasPrice = await publicClient.getGasPrice();
-    const estimated = await publicClient.estimateGas({ data });
-
+    const estimated = await publicClient.estimateGas({ data: bytecode });
     const gasNum = Number(estimated);
     const priceNum = Number(gasPrice);
-    const costWei = BigInt(gasNum) * gasPrice;
-    const costMNT = Number(costWei) / 1e18;
-    const costUSD = costMNT * 0.80;
-
+    const costMNT = (gasNum * priceNum) / 1e18;
     return {
       gas: gasNum.toLocaleString(),
       gasPrice: (priceNum / 1e9).toFixed(2),
       costMNT: costMNT.toFixed(6),
-      costUSD: `$${costUSD.toFixed(4)}`,
+      costUSD: `$${(costMNT * 0.8).toFixed(4)}`,
     };
   } catch {
-    return {
-      gas: "~250,000",
-      gasPrice: "0.02",
-      costMNT: "0.005",
-      costUSD: "~$0.004",
-    };
+    return { gas: "~250,000", gasPrice: "0.02", costMNT: "0.005", costUSD: "~$0.004" };
   }
 }
 
 export async function deployContract(
   bytecode: Hex,
   privateKey: string,
-  args: unknown[] = [],
 ): Promise<{ address: string; txHash: string }> {
   const account = getAccount(privateKey);
-
-  // Encode constructor args into the deployment data
-  const { encodeDeployData: enc } = await import("viem");
-  const data = (enc as any)({ abi: [], bytecode, args });
 
   const walletClient = createWalletClient({
     chain: mantleTestnet,
@@ -71,19 +49,14 @@ export async function deployContract(
     account,
   });
 
-  // Send raw creation transaction
-  const hash = await walletClient.sendTransaction({
-    account,
-    data,
-    chain: mantleTestnet,
-  });
+  const hash = await walletClient.deployContract({
+    abi: [],
+    bytecode,
+  } as any);
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
   if (!receipt.contractAddress) throw new Error("Deployment failed — no contract address");
 
-  return {
-    address: receipt.contractAddress,
-    txHash: hash,
-  };
+  return { address: receipt.contractAddress, txHash: hash };
 }

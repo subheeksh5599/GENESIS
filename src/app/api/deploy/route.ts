@@ -81,29 +81,10 @@ export async function POST(request: Request) {
     const bytecode = ("0x" + contract.evm.bytecode.object) as `0x${string}`;
     const abi = contract.abi;
 
-    // ── STAGE 4: EXTRACT CONSTRUCTOR ARGS ──
-    const constructorAbi = abi.find((item: { type: string }) => item.type === "constructor");
-    const constructorArgs: unknown[] = [];
-    if (constructorAbi?.inputs) {
-      for (const input of constructorAbi.inputs) {
-        if (input.type === "address") {
-          constructorArgs.push("0x0000000000000000000000000000000000000000");
-        } else if (input.type.includes("uint")) {
-          constructorArgs.push(0);
-        } else if (input.type === "bool") {
-          constructorArgs.push(false);
-        } else if (input.type === "string") {
-          constructorArgs.push("");
-        } else {
-          constructorArgs.push(0);
-        }
-      }
-    }
-
-    // ── STAGE 5: GAS ESTIMATE ──
+    // ── STAGE 4: GAS ESTIMATE ──
     let gasEstimate: { gas: string; gasPrice: string; costMNT: string; costUSD: string };
     try {
-      gasEstimate = await estimateGas(bytecode, constructorArgs);
+      gasEstimate = await estimateGas(bytecode);
     } catch {
       gasEstimate = { gas: "~250,000", gasPrice: "0.02", costMNT: "0.005", costUSD: "~$0.004" };
     }
@@ -121,7 +102,7 @@ export async function POST(request: Request) {
     }
 
     // ── STAGE 7: DEPLOY ──
-    const { address: contractAddress, txHash } = await deployContract(bytecode, privateKey, constructorArgs);
+    const { address: contractAddress, txHash } = await deployContract(bytecode, privateKey);
 
     // ── STAGE 8: SAVE + VERIFY ──
     const agentId = String(1000 + getAgentCount() + 1);
