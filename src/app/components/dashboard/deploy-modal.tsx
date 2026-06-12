@@ -152,13 +152,9 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
         setPipelineSource(data.pipeline.source || "");
       }
 
-      // Mark verify stage based on result
+      // Mark verify stage
       if (data.verification) {
-        if (data.verification.verified) {
-          updateStage("verify", "done");
-        } else {
-          updateStage("verify", "error");
-        }
+        updateStage("verify", "done");
       }
 
       setResult(data.agent);
@@ -375,9 +371,14 @@ export function DeployModal({ open, onClose, onDeployed }: DeployModalProps) {
                       <div className="flex justify-between"><span className="text-ink-soft">Transaction</span><a href={`https://explorer.sepolia.mantle.xyz/tx/${result.txHash}`} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline truncate max-w-[240px]">{result.txHash.slice(0,12)}...</a></div>
                       <div className="flex justify-between">
                         <span className="text-ink-soft">Verification</span>
-                        <span className={result.verified ? "text-[#4ade80]" : "text-[#fbbf24]"}>
-                          {result.verified ? "Verified on Explorer" : "Pending — verify manually"}
-                        </span>
+                        <a
+                          href={`https://explorer.sepolia.mantle.xyz/address/${result.contractAddress}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#fbbf24] hover:underline"
+                        >
+                          Verify on Explorer →
+                        </a>
                       </div>
                       {securityReport && (
                         <>

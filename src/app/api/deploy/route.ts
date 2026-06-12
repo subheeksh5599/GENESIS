@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { generateSolidity } from "@/lib/ai-gen";
 import { deployContract, getBalance, estimateGas } from "@/lib/deployer";
 import { saveAgent, getAgentCount } from "@/lib/store";
-import { verifyContract } from "@/lib/verifier";
+import { getVerificationInfo } from "@/lib/verifier";
 import { reviewContract, type SecurityReport } from "@/lib/security-review";
 import solc from "solc";
 
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
     // ── STAGE 7: DEPLOY ──
     const { address: contractAddress, txHash } = await deployContract(bytecode, privateKey);
 
-    // ── STAGE 8: SAVE + VERIFY ──
+    // ── STAGE 8: SAVE ──
     const agentId = String(1000 + getAgentCount() + 1);
     saveAgent({
       id: agentId,
@@ -124,17 +124,13 @@ export async function POST(request: Request) {
       tvl: "$0",
     });
 
-    const verifyResult = await verifyContract(contractAddress, source, contractName, COMPILER_VERSION, 200);
-    if (verifyResult.verified) {
-      const { updateAgent } = await import("@/lib/store");
-      updateAgent(agentId, { verified: true });
-    }
+    const verification = getVerificationInfo(contractAddress, source, contractName, COMPILER_VERSION, 200);
 
     return NextResponse.json({
       success: true,
-      agent: { id: agentId, contractAddress, txHash, verified: verifyResult.verified },
+      agent: { id: agentId, contractAddress, txHash, verified: false },
       pipeline: { source, securityReport, gasEstimate, balance, abi },
-      verification: verifyResult,
+      verification,
     });
   } catch (err: unknown) {
     return NextResponse.json({

@@ -10,7 +10,7 @@ interface DevPanelProps {
   verified?: boolean;
 }
 
-export function DeveloperPanel({ contractAddress, txHash, abi, source, verified }: DevPanelProps) {
+export function DeveloperPanel({ contractAddress, txHash, abi, source }: DevPanelProps) {
   const [copied, setCopied] = useState<string | null>(null);
 
   const copy = (label: string, text: string) => {
@@ -20,6 +20,9 @@ export function DeveloperPanel({ contractAddress, txHash, abi, source, verified 
   };
 
   const abiStr = abi ? JSON.stringify(abi, null, 2) : "[]";
+
+  // Manual verification steps
+  const verifyUrl = `https://explorer.sepolia.mantle.xyz/address/${contractAddress}`;
 
   const jsSnippet = `import { ethers } from "ethers";
 
@@ -56,11 +59,14 @@ w3.eth.wait_for_transaction_receipt(tx)`;
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="font-display font-semibold text-base">Developer Integration</h3>
-        {verified && (
-          <span className="font-mono text-[0.48rem] bg-[#4ade80]/10 text-[#4ade80] px-2 py-1 tracking-[0.1em] uppercase">
-            Verified on Explorer
-          </span>
-        )}
+        <a
+          href={verifyUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-mono text-[0.48rem] bg-[#fbbf24]/10 text-[#92400e] px-2 py-1 tracking-[0.1em] uppercase hover:underline"
+        >
+          Verify on Explorer →
+        </a>
       </div>
 
       {/* Quick copy */}
@@ -157,22 +163,37 @@ w3.eth.wait_for_transaction_receipt(tx)`;
 
       {/* Source code */}
       {source && (
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="font-mono text-[0.45rem] tracking-[0.15em] uppercase text-ink-soft">
-              Solidity Source
+        <>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="font-mono text-[0.45rem] tracking-[0.15em] uppercase text-ink-soft">
+                Solidity Source
+              </div>
+              <button
+                onClick={() => copy("source", source)}
+                className="font-mono text-[0.42rem] text-accent hover:underline"
+              >
+                {copied === "source" ? "Copied" : "Copy source"}
+              </button>
             </div>
-            <button
-              onClick={() => copy("source", source)}
-              className="font-mono text-[0.42rem] text-accent hover:underline"
-            >
-              {copied === "source" ? "Copied" : "Copy source"}
-            </button>
+            <pre className="font-mono text-[0.48rem] text-ink bg-surface-alt border border-border p-4 overflow-x-auto max-h-[300px] overflow-y-auto leading-relaxed whitespace-pre-wrap">
+              {source}
+            </pre>
           </div>
-          <pre className="font-mono text-[0.48rem] text-ink bg-surface-alt border border-border p-4 overflow-x-auto max-h-[400px] overflow-y-auto leading-relaxed whitespace-pre-wrap">
-            {source}
-          </pre>
-        </div>
+
+          {/* Verification instructions */}
+          <div className="bg-[#fffbeb] border border-[#fde68a] p-4">
+            <div className="font-mono text-[0.48rem] text-[#92400e] font-medium mb-2">Verify on Mantle Explorer</div>
+            <div className="font-mono text-[0.44rem] text-[#a16207] leading-relaxed space-y-1">
+              <p>1. Open <a href={verifyUrl} target="_blank" rel="noopener noreferrer" className="underline">the contract page</a></p>
+              <p>2. Click the <b>Contract</b> tab</p>
+              <p>3. Click <b>Verify and Publish</b></p>
+              <p>4. Select: Solidity (Single File), v0.8.35, Optimization: 200 runs</p>
+              <p>5. Copy the source above and paste it</p>
+              <p>6. Click Submit</p>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
