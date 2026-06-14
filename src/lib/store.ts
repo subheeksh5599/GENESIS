@@ -1,8 +1,3 @@
-import fs from "fs";
-import path from "path";
-
-const DATA_FILE = path.join(process.cwd(), "data", "agents.json");
-
 export interface StoredAgent {
   id: string;
   name: string;
@@ -21,35 +16,27 @@ export interface StoredAgent {
   tvl: string;
 }
 
-function ensureDataDir() {
-  const dir = path.dirname(DATA_FILE);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-}
+// In-memory store — survives cold starts on serverless (Vercel)
+// Agents persist for the lifetime of the serverless instance
+const agents: StoredAgent[] = [];
 
 export function loadAgents(): StoredAgent[] {
-  ensureDataDir();
-  if (!fs.existsSync(DATA_FILE)) return [];
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  return JSON.parse(raw);
+  return agents;
 }
 
 export function saveAgent(agent: StoredAgent) {
-  ensureDataDir();
-  const agents = loadAgents();
   agents.unshift(agent);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(agents, null, 2));
 }
 
 export function getAgentById(id: string): StoredAgent | null {
-  return loadAgents().find((a) => a.id === id) || null;
+  return agents.find((a) => a.id === id) || null;
 }
 
 export function getAgentCount(): number {
-  return loadAgents().length;
+  return agents.length;
 }
 
 export function getTotalTVL(): string {
-  const agents = loadAgents();
   const total = agents
     .filter((a) => a.status === "live")
     .reduce((sum, a) => sum + parseFloat(a.tvl.replace(/[^0-9.]/g, "")) || 0, 0);
@@ -59,9 +46,7 @@ export function getTotalTVL(): string {
 }
 
 export function updateAgent(id: string, updates: Partial<StoredAgent>) {
-  const agents = loadAgents();
   const idx = agents.findIndex((a) => a.id === id);
   if (idx === -1) return;
   agents[idx] = { ...agents[idx], ...updates };
-  fs.writeFileSync(DATA_FILE, JSON.stringify(agents, null, 2));
 }

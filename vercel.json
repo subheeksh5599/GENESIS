@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "src/app/api/deploy/route.ts": {
+      "maxDuration": 10
+    }
+  }
+}

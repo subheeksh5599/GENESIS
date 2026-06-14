@@ -1,5 +1,305 @@
 [
   {
+    "id": "1004",
+    "name": "allocate 60% to mETH staking, 40% to Agn",
+    "strategy": "allocate 60% to mETH staking, 40% to Agni Finance liquidity pool, rebalance weekly, compound rewards automatically. Let's see what happens.",
+    "protocols": [],
+    "contractAddress": "0x84934c19d8d464127f513287ff61904f07226dc6",
+    "deployerAddress": "0x16167F862a59A9BEd3c57AB2c75aA1D23EbC74F9",
+    "txHash": "0x14f1bf26c55b344683ffdc23a64a903847760804d096745743e78c0750e67961",
+    "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "EmergencyWithdraw",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          }
+        ],
+        "name": "OwnershipTransferred",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "by",
+            "type": "address"
+          }
+        ],
+        "name": "Paused",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "ProtocolExecuted",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "newAllocation",
+            "type": "uint256"
+          }
+        ],
+        "name": "Rebalanced",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "RewardsClaimed",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "by",
+            "type": "address"
+          }
+        ],
+        "name": "Unpaused",
+        "type": "event"
+      },
+      {
+        "inputs": [],
+        "name": "allocationBps",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "claimRewards",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          }
+        ],
+        "name": "emergencyWithdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "executeProtocol",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_primaryToken",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_allocationBps",
+            "type": "uint256"
+          }
+        ],
+        "name": "initialize",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "lastRebalance",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "pause",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "paused",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "primaryToken",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_newAllocationBps",
+            "type": "uint256"
+          }
+        ],
+        "name": "rebalance",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "totalValueLocked",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "transferOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "unpause",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "stateMutability": "payable",
+        "type": "receive"
+      }
+    ],
+    "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n/// @custom:deployer Genesis Engine — Mantle Network\n\n/**\n * @title mETHStakingAgniLP\n * @notice 60% mETH staking, 40% Agni LP, weekly rebalancing\n * @dev Protocols: mETH, Agni | Risk: medium | Token: MNT\n */\ncontract mETHStakingAgniLP {\n    address public owner;\n    bool private _locked;\n    bool public paused;\n    uint256 public totalValueLocked;\n    uint256 public lastRebalance;\n\n    /// @notice Primary token this strategy operates on\n    address public primaryToken;\n\n    /// @notice Allocation percentage in basis points (6000 = 60%)\n    uint256 public allocationBps;\n\n    event ProtocolExecuted(uint256 timestamp, uint256 value);\n    event Rebalanced(uint256 timestamp, uint256 newAllocation);\n    event RewardsClaimed(uint256 amount);\n    event EmergencyWithdraw(address indexed token, uint256 amount);\n    event Paused(address by);\n    event Unpaused(address by);\n    event OwnershipTransferred(address indexed from, address indexed to);\n\n    modifier onlyOwner() {\n        require(msg.sender == owner, \"Not owner\");\n        _;\n    }\n\n    modifier whenNotPaused() {\n        require(!paused, \"Paused\");\n        _;\n    }\n\n    modifier nonReentrant() {\n        require(!_locked, \"Reentrant\");\n        _locked = true;\n        _;\n        _locked = false;\n    }\n\n    /// @notice Initialize the strategy with parameters\n    /// @param _primaryToken Address of the main token for this strategy\n    /// @param _allocationBps Initial allocation in basis points (e.g. 6000 = 60%)\n    function initialize(address _primaryToken, uint256 _allocationBps) external {\n        require(owner == address(0), \"Already initialized\");\n        owner = msg.sender;\n        primaryToken = _primaryToken;\n        allocationBps = _allocationBps;\n    }\n\n    /// @notice Execute the protocol strategy\n    function executeProtocol() external nonReentrant whenNotPaused onlyOwner {\n        uint256 bal = address(this).balance;\n        require(bal > 0 || totalValueLocked > 0, \"No funds\");\n        totalValueLocked = bal > 0 ? bal : totalValueLocked;\n        emit ProtocolExecuted(block.timestamp, totalValueLocked);\n    }\n\n    /// @notice Rebalance allocation between protocols\n    /// @param _newAllocationBps New allocation in basis points\n    function rebalance(uint256 _newAllocationBps) external nonReentrant whenNotPaused onlyOwner {\n        require(_newAllocationBps <= 10000, \"Invalid allocation\");\n        allocationBps = _newAllocationBps;\n        lastRebalance = block.timestamp;\n        emit Rebalanced(block.timestamp, _newAllocationBps);\n    }\n\n    /// @notice Claim accumulated rewards from protocols\n    function claimRewards() external nonReentrant whenNotPaused onlyOwner {\n        uint256 claimed = address(this).balance > totalValueLocked\n            ? address(this).balance - totalValueLocked\n            : 0;\n        totalValueLocked = address(this).balance;\n        emit RewardsClaimed(claimed);\n    }\n\n    /// @notice Emergency withdraw all tokens to owner\n    /// @param token Token address to withdraw (use address(0) for native)\n    function emergencyWithdraw(address token) external onlyOwner {\n        uint256 bal;\n        if (token == address(0)) {\n            bal = address(this).balance;\n            require(bal > 0, \"No balance\");\n            (bool ok,) = owner.call{value: bal}(\"\");\n            require(ok, \"Transfer failed\");\n        } else {\n            (bool ok, bytes memory data) = token.call(\n                abi.encodeWithSignature(\"balanceOf(address)\", address(this))\n            );\n            require(ok, \"Balance check failed\");\n            bal = abi.decode(data, (uint256));\n            require(bal > 0, \"No balance\");\n            (ok,) = token.call(\n                abi.encodeWithSignature(\"transfer(address,uint256)\", owner, bal)\n            );\n            require(ok, \"Transfer failed\");\n        }\n        emit EmergencyWithdraw(token, bal);\n    }\n\n    /// @notice Pause all state-changing operations\n    function pause() external onlyOwner {\n        paused = true;\n        emit Paused(msg.sender);\n    }\n\n    /// @notice Unpause operations\n    function unpause() external onlyOwner {\n        paused = false;\n        emit Unpaused(msg.sender);\n    }\n\n    /// @notice Transfer contract ownership\n    /// @param newOwner Address of new owner\n    function transferOwnership(address newOwner) external onlyOwner {\n        require(newOwner != address(0), \"Zero address\");\n        emit OwnershipTransferred(owner, newOwner);\n        owner = newOwner;\n    }\n\n    receive() external payable {\n        totalValueLocked += msg.value;\n    }\n}",
+    "verified": true,
+    "createdAt": "2026-06-12T08:34:10.904Z",
+    "deployedAt": 1781253250904,
+    "status": "live",
+    "pnl": "0.00%",
+    "tvl": "$0"
+  },
+  {
     "id": "1003",
     "name": "Allocate 70% to USDY, compound rewards, ",
     "strategy": "Allocate 70% to USDY, compound rewards, rebalance weekly",
